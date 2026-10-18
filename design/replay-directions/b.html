@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FilmRoom — Replay (B · Data Portrait)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3f5f7; --sheet: #ffffff; --ink: #1b2430; --mute: #56606c; --hair: #d5dbe2;
+    --correct: #2f7d5b; --brilliant: #0b7f59; --trap: #b5381d; --sink: #8a5a04; --second: #7c4dcc; --tool: #1f6fc2; --gap: #c2185b;
+    --serif: "Source Serif 4", Georgia, serif; --sans: "Public Sans", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.55 var(--sans); }
+  .page { max-width: 1240px; margin: 0 auto; padding: 36px 40px 64px; }
+  .top { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid var(--ink); padding-bottom: 12px; }
+  .top .brand { font: 600 18px var(--serif); }
+  .top .meta { color: var(--mute); font-size: 13px; }
+  .intro { display: grid; grid-template-columns: 1.15fr 1fr; gap: 56px; padding: 40px 0 32px; }
+  .intro h1 { font: 400 46px/1.12 var(--serif); margin: 0; letter-spacing: -.01em; }
+  .intro h1 b { font-weight: 600; }
+  .figure { display: flex; gap: 28px; align-items: flex-end; }
+  .figure .big { font: 600 96px/0.9 var(--serif); }
+  .figure .range { color: var(--mute); font-size: 14px; }
+  .lostlist { margin-top: 18px; display: grid; gap: 6px; }
+  .lostrow { display: grid; grid-template-columns: 120px 1fr 44px; align-items: center; gap: 12px; font-size: 14px; }
+  .lostrow .bar { height: 8px; background: var(--c); border-radius: 1px; }
+  .lostrow .v { text-align: right; font-variant-numeric: tabular-nums; color: var(--mute); }
+
+  .portrait { background: var(--sheet); border: 1px solid var(--hair); padding: 28px 32px 22px; }
+  .portrait h2, .col h2 { font: 600 22px var(--serif); margin: 0 0 4px; }
+  .portrait .sub { color: var(--mute); font-size: 14px; margin-bottom: 18px; }
+  .glyphs { display: grid; grid-template-columns: repeat(11, 1fr); gap: 14px 10px; }
+  .glyph { text-align: center; cursor: pointer; border-radius: 6px; padding: 6px 0 4px; }
+  .glyph:hover, .glyph.sel { background: #eef2f6; }
+  .glyph.sel { outline: 1.5px solid var(--ink); }
+  .glyph svg { display: block; margin: 0 auto; overflow: visible; }
+  .glyph .n { font-size: 12px; color: var(--mute); }
+  .key { display: grid; grid-template-columns: repeat(4, auto) 1fr; gap: 26px; align-items: center; border-top: 1px solid var(--hair); margin-top: 20px; padding-top: 14px; font-size: 13px; color: var(--mute); }
+  .key svg { vertical-align: middle; margin-right: 6px; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
+  .swatches span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--c); margin-right: 6px; }
+
+  .lower { display: grid; grid-template-columns: 1fr 1.35fr; gap: 40px; margin-top: 36px; }
+  .col .by { font-size: 12px; color: var(--mute); margin-bottom: 14px; letter-spacing: .02em; }
+  .col p.lede { font: 400 21px/1.4 var(--serif); margin: 0 0 20px; }
+  .pat { margin-bottom: 18px; }
+  .pat h3 { font: 600 16px var(--sans); margin: 0 0 2px; color: var(--c); }
+  .pat p { margin: 0; }
+  .habits { margin: 22px 0 0; padding: 18px 0 0; border-top: 1px solid var(--hair); }
+  .habits h3 { font: 600 14px var(--sans); margin: 0 0 8px; }
+  .habits ol { margin: 0; padding-left: 20px; }
+  .habits li { margin-bottom: 6px; }
+
+  .sheet { background: var(--sheet); border: 1px solid var(--hair); padding: 26px 28px; }
+  .verdict { display: inline-flex; gap: 8px; align-items: center; font: 600 13px var(--sans); color: var(--tool); border: 1px solid currentColor; border-radius: 999px; padding: 3px 12px; }
+  .stem { font: 400 22px/1.4 var(--serif); margin: 14px 0 16px; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); }
+  .facts div { padding: 10px 0; }
+  .facts small { display: block; color: var(--mute); font-size: 12px; }
+  .facts b { font: 600 20px var(--serif); }
+  .track { margin: 18px 0 6px; position: relative; height: 56px; }
+  .track .rail { position: absolute; top: 26px; left: 0; right: 0; height: 2px; background: var(--hair); }
+  .track .par { position: absolute; top: 14px; height: 26px; border-left: 2px dashed var(--ink); }
+  .track .par span { position: absolute; top: -18px; left: -24px; font-size: 11px; color: var(--mute); white-space: nowrap; }
+  .track .dot { position: absolute; top: 20px; width: 14px; height: 14px; border-radius: 50%; background: var(--sheet); border: 2px solid var(--ink); transform: translateX(-7px); }
+  .track .dot.ans { background: var(--tool); border-color: var(--tool); }
+  .track .lab { position: absolute; top: 40px; font-size: 12px; color: var(--mute); transform: translateX(-50%); white-space: nowrap; }
+  .note { margin-top: 26px; font: 400 17px/1.5 var(--serif); }
+  .note .by { font: 500 12px var(--sans); color: var(--mute); display: block; margin-bottom: 4px; }
+  .chat { margin-top: 20px; border-top: 1px solid var(--hair); padding-top: 14px; }
+  .chat .q { font-weight: 600; margin-bottom: 4px; }
+  .chat .a { color: #2b3644; margin-bottom: 12px; }
+  .chat code { background: #eef2f6; padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+  .chatbox { display: flex; gap: 8px; }
+  .chatbox input { flex: 1; border: 1px solid var(--hair); border-radius: 6px; padding: 11px 12px; font: 14px var(--sans); background: var(--paper); color: var(--ink); }
+  .chatbox button, .cta { min-height: 44px; border: 0; border-radius: 6px; padding: 0 18px; background: var(--ink); color: #fff; font: 600 14px var(--sans); cursor: pointer; }
+  .end { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--ink); color: var(--mute); font-size: 13px; }
+  @media (max-width: 900px) {
+    .page { padding: 20px 16px 48px; }
+    .intro, .lower { grid-template-columns: 1fr; gap: 24px; }
+    .intro h1 { font-size: 32px; }
+    .glyphs { grid-template-columns: repeat(6, 1fr); }
+    .key { grid-template-columns: 1fr 1fr; }
+    .swatches { justify-content: flex-start; grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top"><span class="brand">FilmRoom</span><span class="meta">Practice module 1 · Math · finished in 32:41 · ✦ AI coach on</span></div>
+
+  <section class="intro">
+    <h1>You scored about <b>570</b>. The <b>160 points</b> you missed mostly came down to two habits, not two topics.</h1>
+    <div>
+      <div class="figure"><span class="big">570</span><span class="range">estimated SAT Math<br>likely 540–600 · 14 of 22 correct</span></div>
+      <div class="lostlist" id="lost"></div>
+    </div>
+  </section>
+
+  <section class="portrait">
+    <h2>Your module, question by question</h2>
+    <div class="sub">Each mark is drawn from what you actually did. Select one to read it closely.</div>
+    <div class="glyphs" id="glyphs"></div>
+    <div class="key">
+      <span><svg width="34" height="14"><rect x="0" y="5" width="22" height="4" fill="#1b2430"/><line x1="16" y1="1" x2="16" y2="13" stroke="#1b2430" stroke-dasharray="2 2"/></svg>time vs. target</span>
+      <span><svg width="14" height="14"><line x1="7" y1="1" x2="7" y2="13" stroke="#1b2430" stroke-width="2"/></svg>answer changed</span>
+      <span><svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="none" stroke="#1b2430" stroke-width="1.5"/></svg>used Desmos</span>
+      <span><svg width="16" height="16"><circle cx="8" cy="8" r="5" fill="#1b2430"/></svg>filled = correct</span>
+      <div class="swatches" id="sw"></div>
+    </div>
+  </section>
+
+  <section class="lower">
+    <div class="col">
+      <h2>Scouting report</h2>
+      <div class="by">✦ Written by Claude from your session</div>
+      <p class="lede">Traps cost you the most: about 60 of 160 points, all on questions you answered in under a minute.</p>
+      <div class="pat" style="--c: var(--trap)"><h3>Taking the bait · Q2, Q16, Q20</h3><p>You picked the answer built for a rushed reader, each in under 60 seconds. You knew the method; the speed picked the trap.</p></div>
+      <div class="pat" style="--c: var(--sink)"><h3>Two clock drains · Q11, Q15</h3><p>Over three minutes each, still wrong. That time would have covered your last two questions twice.</p></div>
+      <div class="habits"><h3>Three things to do next time</h3><ol>
+        <li>Before you pick, name the wrong answer a rushed student would choose.</li>
+        <li>At double the target time, guess, mark it, and move on.</li>
+        <li>On quadratics, graph first in Desmos: it's a 20-second check.</li>
+      </ol></div>
+    </div>
+
+    <div class="sheet">
+      <span class="verdict">◆ Wrong tool · Question 9</span>
+      <p class="stem">What is the positive solution to x² − 2x − 15 = 0?</p>
+      <div class="facts"><div><small>You answered</small><b>3</b></div><div><small>Correct</small><b>5</b></div><div><small>Time</small><b>2m 30s</b> <span style="color:var(--mute);font-size:13px">/ 1m 35s</span></div></div>
+      <div class="track">
+        <div class="rail"></div>
+        <div class="par" style="left: 63%"><span>target 1:35</span></div>
+        <div class="dot" style="left: 0%"></div><div class="lab" style="left: 2%">opened</div>
+        
+        <div class="dot ans" style="left: 72%"></div><div class="lab" style="left: 72%">typed 3</div>
+        <div class="dot" style="left: 100%"></div><div class="lab" style="left: 97%">left · no Desmos</div>
+      </div>
+      <div class="note"><span class="by">✦ Coach note</span>You factored by hand and flipped the signs: (x − 3)(x + 5) instead of (x − 5)(x + 3). Graphing it would have shown the intercept at 5 in about 20 seconds. On any "find the solution" quadratic, graph first, then check by hand.</div>
+      <div class="chat">
+        <div class="q">How would I do this in Desmos?</div>
+        <div class="a">Type <code>y=x^2-2x-15</code>. It crosses the x-axis at −3 and 5; tap the right-hand crossing to read 5.</div>
+        <div class="chatbox"><input aria-label="Ask about question 9" placeholder="Ask about this question…"><button>Ask</button></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="end"><span>Original practice questions. Score estimates are approximate.</span><button class="cta">Fix these 8 mistakes</button></div>
+</div>
+<script>
+const K = { correct: ["Correct","#2f7d5b"], brilliant: ["Brilliant","#0b7f59"], trap: ["Trap","#b5381d"], sink: ["Time sink","#8a5a04"], second: ["Second-guess","#7c4dcc"], tool: ["Wrong tool","#1f6fc2"], gap: ["Concept gap","#c2185b"] };
+// [seconds, target, kind, answer changes, desmos]
+const Q = [[48,60,"correct",0,0],[41,60,"trap",0,0],[52,60,"correct",1,0],[35,60,"correct",0,0],[50,60,"correct",0,0],[66,60,"correct",0,0],[80,95,"correct",0,1],[110,95,"second",1,0],[150,95,"tool",1,0],[70,95,"correct",0,0],[214,95,"sink",2,0],[88,95,"correct",0,1],[75,95,"correct",0,0],[60,95,"correct",0,0],[200,95,"sink",1,1],[52,95,"trap",0,0],[82,130,"brilliant",0,1],[95,130,"brilliant",0,1],[120,130,"correct",1,0],[55,130,"trap",0,0],[140,130,"gap",2,0],[60,130,"correct",0,1]];
+const lost = { trap: 60, sink: 40, second: 20, tool: 20, gap: 20 };
+const max = 220;
+document.getElementById("glyphs").innerHTML = Q.map(([t, par, k, ch, ds], i) => {
+  const c = K[k][1], ok = k === "correct" || k === "brilliant", w = 72, h = 64;
+  const bar = Math.max(4, (t / max) * w), parX = (par / max) * w;
+  const ticks = Array.from({ length: ch }, (_, j) => `<line x1="${8 + j * 6}" y1="40" x2="${8 + j * 6}" y2="52" stroke="${c}" stroke-width="2"/>`).join("");
+  return `<div class="glyph${i === 8 ? " sel" : ""}" title="Q${i + 1} · ${K[k][0]}"><svg width="${w}" height="${h}" role="img" aria-label="Question ${i + 1}: ${K[k][0]}">
+    <circle cx="${w / 2}" cy="18" r="11" fill="${ok ? c : "#fff"}" stroke="${c}" stroke-width="2.5"/>
+    ${ds ? `<circle cx="${w / 2}" cy="18" r="16" fill="none" stroke="${c}" stroke-width="1.2"/>` : ""}
+    <rect x="0" y="34" width="${bar}" height="4" fill="${c}"/>
+    <line x1="${parX}" y1="30" x2="${parX}" y2="42" stroke="#1b2430" stroke-dasharray="2 2"/>
+    ${ticks}
+  </svg><div class="n">${i + 1} · ${K[k][0]}</div></div>`;
+}).join("");
+document.getElementById("lost").innerHTML = Object.entries(lost).map(([k, v]) => `<div class="lostrow" style="--c:${K[k][1]}"><span>${K[k][0]}</span><div class="bar" style="width:${(v / 60) * 100}%"></div><span class="v">−${v}</span></div>`).join("");
+document.getElementById("sw").innerHTML = Object.values(K).map(([n, c]) => `<span style="--c:${c}">${n}</span>`).join("");
+</script>
+</body>
+</html>

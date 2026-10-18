@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FilmRoom — Replay (A · Broadcast Tape)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e; --panel: #151816; --line: #262b28; --ink: #eef1ee; --mute: #9aa39d; --dim: #8b948e;
+    --correct: #3f8f6a; --brilliant: #44d19a; --trap: #ff6a3d; --sink: #f2b33d; --second: #c58cff;
+    --tool: #49b3ff; --gap: #ff4f79; --blank: #4a514d; --skip: #8fd0b4;
+    --cond: "Barlow Condensed", system-ui, sans-serif; --sans: "Barlow", system-ui, sans-serif; --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 0 32px; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid var(--line); }
+  .brand { font: 700 20px var(--cond); letter-spacing: .04em; }
+  .brand span { color: var(--trap); }
+  .meta { font: 13px var(--mono); color: var(--mute); display: flex; gap: 18px; align-items: center; }
+  .pill { border: 1px solid var(--line); padding: 3px 10px; border-radius: 999px; color: var(--brilliant); }
+
+  /* Scoreboard */
+  .board { display: grid; grid-template-columns: auto 1fr; gap: 56px; align-items: end; padding: 40px 0 28px; }
+  .score small { display: block; font: 600 14px var(--cond); color: var(--mute); letter-spacing: .08em; }
+  .score b { font: 700 128px/0.9 var(--cond); letter-spacing: -.02em; }
+  .score i { font: 500 18px var(--mono); color: var(--mute); font-style: normal; margin-left: 10px; }
+  .lost h1 { font: 600 40px/1.1 var(--cond); margin: 0 0 14px; max-width: 760px; }
+  .lost h1 em { font-style: normal; color: var(--trap); }
+  .causebar { display: flex; height: 14px; border-radius: 3px; overflow: hidden; gap: 2px; }
+  .causebar div { height: 100%; }
+  .legend { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 10px; font: 13px var(--mono); color: var(--mute); }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 7px; background: var(--c); vertical-align: -1px; }
+
+  /* Tape */
+  .tape-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px 14px; }
+  .tape-head { display: flex; justify-content: space-between; font: 13px var(--mono); color: var(--mute); margin-bottom: 10px; }
+  .tape { display: flex; gap: 3px; height: 96px; align-items: stretch; }
+  .seg { position: relative; border-radius: 4px; background: color-mix(in oklab, var(--c) 30%, var(--panel)); border-top: 4px solid var(--c); cursor: pointer; min-width: 22px; display: flex; flex-direction: column; justify-content: space-between; padding: 6px 6px 5px; transition: background .15s; }
+  .seg:hover, .seg.sel { background: color-mix(in oklab, var(--c) 55%, var(--panel)); }
+  .seg.sel { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .seg .n { font: 600 15px var(--cond); }
+  .seg .g { font: 500 12px var(--mono); color: var(--ink); opacity: .85; }
+  .ticks { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--dim); margin-top: 8px; }
+  .par-line { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,.5); }
+
+  /* Lower grid */
+  .grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; padding: 28px 0 60px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; }
+  .card h2 { font: 600 22px var(--cond); margin: 0 0 4px; letter-spacing: .01em; }
+  .card .sub { color: var(--mute); font-size: 13px; margin-bottom: 16px; }
+  .scout p.head { font: 600 20px/1.3 var(--cond); margin: 0 0 16px; }
+  .pattern { border-left: 3px solid var(--c); padding: 2px 0 2px 12px; margin-bottom: 16px; }
+  .pattern b { font: 600 16px var(--cond); letter-spacing: .02em; display: block; }
+  .pattern .qs { font: 12px var(--mono); color: var(--mute); }
+  .habits { margin: 18px 0 0; padding: 0; list-style: none; counter-reset: h; }
+  .habits li { padding: 10px 0 10px 34px; border-top: 1px solid var(--line); position: relative; }
+  .habits li::before { counter-increment: h; content: counter(h); position: absolute; left: 0; top: 9px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--line); font: 12px/20px var(--mono); text-align: center; color: var(--mute); }
+  .ai { font: 12px var(--mono); color: var(--brilliant); }
+
+  .detail { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .qhead { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .badge { font: 600 14px var(--cond); letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 4px; background: color-mix(in oklab, var(--c) 25%, transparent); color: var(--c); border: 1px solid var(--c); }
+  .stem { font-size: 17px; line-height: 1.55; margin: 0 0 14px; }
+  .ans { display: flex; gap: 10px; font: 14px var(--mono); }
+  .ans div { flex: 1; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+  .ans .you { border-color: var(--tool); }
+  .ans .right { border-color: var(--brilliant); }
+  .ans small { display: block; color: var(--mute); font: 12px var(--sans); }
+  .evidence { margin: 14px 0 0; padding: 0; list-style: none; font: 13px var(--mono); color: var(--mute); }
+  .evidence li::before { content: "▸ "; color: var(--tool); }
+  .tl { position: relative; margin: 6px 0 0; padding: 0; list-style: none; }
+  .tl li { display: grid; grid-template-columns: 64px 1fr; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .tl time { font: 13px var(--mono); color: var(--mute); }
+  .tl .warn { color: var(--sink); }
+  .coach { margin-top: 16px; padding: 14px 16px; border-radius: 8px; background: #101311; border: 1px solid var(--line); }
+  .coach .ai { display: block; margin-bottom: 6px; }
+  .ask { margin-top: 16px; }
+  .bubble { padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; max-width: 92%; }
+  .bubble.me { background: #20251f; margin-left: auto; }
+  .bubble.bot { background: #101311; border: 1px solid var(--line); }
+  .bubble code { font: 13px var(--mono); background: #000; padding: 1px 6px; border-radius: 4px; color: var(--tool); }
+  .askbox { display: flex; gap: 8px; margin-top: 8px; }
+  .askbox input { flex: 1; background: #0b0d0c; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 11px 12px; font: 14px var(--sans); }
+  .askbox button, .cta { background: var(--ink); color: var(--bg); border: 0; border-radius: 6px; padding: 0 18px; font: 600 15px var(--cond); letter-spacing: .04em; cursor: pointer; min-height: 44px; }
+  .cta { background: var(--trap); color: #160a05; padding: 0 22px; }
+  .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; color: var(--mute); font-size: 13px; }
+  @media (max-width: 900px) {
+    .wrap { padding: 0 16px; }
+    .board, .grid, .detail { grid-template-columns: 1fr; gap: 20px; }
+    .score b { font-size: 88px; }
+    .lost h1 { font-size: 28px; }
+    .tape { overflow-x: auto; }
+    .seg .g { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">FILM<span>ROOM</span></div>
+    <div class="meta"><span>Module 1 · Math · 35:00</span><span>Finished 32:41</span><span class="pill">● AI coach on</span></div>
+  </header>
+
+  <section class="board">
+    <div class="score"><small>EST. SAT MATH</small><b>570</b><i>540–600</i></div>
+    <div class="lost">
+      <h1>You left about <em>160 points</em> on the tape. Most of them went to traps and two clock drains.</h1>
+      <div class="causebar" id="causebar"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <section class="tape-wrap">
+    <div class="tape-head"><span>THE TAPE · width = time spent · dashed line = target time</span><span>14 / 22 correct</span></div>
+    <div class="tape" id="tape"></div>
+    <div class="ticks"><span>0:00</span><span>10:00</span><span>20:00</span><span>30:00</span><span>32:41</span></div>
+  </section>
+
+  <section class="grid">
+    <div class="card scout">
+      <h2>Scouting report</h2>
+      <div class="ai">✦ Written by Claude from your tape</div>
+      <p class="head" style="margin-top:12px">Traps cost you the most: about 60 of 160 points, all on questions you answered in under a minute.</p>
+      <div class="pattern" style="--c: var(--trap)"><b>Taking the bait</b><span class="qs">Q2 · Q16 · Q20</span><div>On 2, 16 and 20 you chose the answer built for a rushed reader, each in under 60 seconds. You knew the method; the speed picked the trap.</div></div>
+      <div class="pattern" style="--c: var(--sink)"><b>Two clock drains</b><span class="qs">Q11 · Q15</span><div>Questions 11 and 15 took over 3 minutes each and still went wrong. That time would have covered your last two questions twice.</div></div>
+      <ul class="habits">
+        <li>Before you pick, name the wrong answer a rushed student would choose.</li>
+        <li>At double the target time, guess, mark it, and move on.</li>
+        <li>On quadratics, graph first in Desmos: it's a 20-second check.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="detail">
+        <div>
+          <div class="qhead"><span class="badge" style="--c: var(--tool)">◆ Wrong tool</span><span style="font: 600 22px var(--cond)">Question 9</span><span style="color:var(--mute);font-size:13px">Quadratics · medium</span></div>
+          <p class="stem">What is the positive solution to x² − 2x − 15 = 0?</p>
+          <div class="ans"><div class="you"><small>Your answer</small>3</div><div class="right"><small>Correct</small>5</div></div>
+          <ul class="evidence"><li>Desmos is the fast route here and was never opened</li><li>2m 30s vs 1m 35s target</li></ul>
+          <div class="coach"><span class="ai">✦ Coach note</span>You factored by hand and flipped the signs: (x − 3)(x + 5) instead of (x − 5)(x + 3). Graphing it would have shown the intercept at 5 in about 20 seconds. On any "find the solution" quadratic, graph first, then check by hand if time allows.</div>
+        </div>
+        <div>
+          <h2 style="font: 600 18px var(--cond); margin: 0 0 4px">What you did</h2>
+          <ol class="tl">
+            <li><time>14:02</time>Opened question</li>
+            <li><time>15:51</time>Typed 3</li>
+            <li><time>16:22</time>Erased, retyped 3</li>
+            <li class="warn"><time>16:32</time>Left after 2m 30s · Desmos never opened</li>
+          </ol>
+          <div class="ask">
+            <h2 style="font: 600 18px var(--cond); margin: 14px 0 8px">Ask about this question</h2>
+            <div class="bubble me">How would I do this in Desmos?</div>
+            <div class="bubble bot">Type <code>y=x^2-2x-15</code>. The graph crosses the x-axis at −3 and 5; tap the right-hand crossing to read 5. That's the positive solution.</div>
+            <div class="askbox"><input aria-label="Ask about question 9" placeholder="Ask why, or how to do it faster…"><button>Ask</button></div>
+            <div style="font-size:12px;color:var(--dim);margin-top:6px">9 questions left on this one</div>
+          </div>
+        </div>
+      </div>
+      <div class="foot"><span>Original practice questions. Score estimates are approximate.</span><button class="cta">Fix these 8 mistakes</button></div>
+    </div>
+  </section>
+</div>
+<script>
+const K = {
+  correct: ["Correct", "var(--correct)", "✓"], brilliant: ["Brilliant", "var(--brilliant)", "★"], trap: ["Trap", "var(--trap)", "✕"],
+  sink: ["Time sink", "var(--sink)", "◷"], second: ["Second-guess", "var(--second)", "↺"], tool: ["Wrong tool", "var(--tool)", "◆"], gap: ["Concept gap", "var(--gap)", "?"],
+};
+const Q = [[48,60,"correct"],[41,60,"trap"],[52,60,"correct"],[35,60,"correct"],[50,60,"correct"],[66,60,"correct"],[80,95,"correct"],[110,95,"second"],[150,95,"tool"],[70,95,"correct"],[214,95,"sink"],[88,95,"correct"],[75,95,"correct"],[60,95,"correct"],[200,95,"sink"],[52,95,"trap"],[82,130,"brilliant"],[95,130,"brilliant"],[120,130,"correct"],[55,130,"trap"],[140,130,"gap"],[60,130,"correct"]];
+const lost = { trap: 60, sink: 40, second: 20, tool: 20, gap: 20 };
+const tape = document.getElementById("tape");
+const total = Q.reduce((s, q) => s + q[0], 0);
+Q.forEach(([t, par, k], i) => {
+  const d = document.createElement("div");
+  d.className = "seg" + (i === 8 ? " sel" : "");
+  d.style.flex = t; d.style.setProperty("--c", K[k][1]);
+  d.title = `Q${i + 1} · ${K[k][0]} · ${Math.floor(t / 60)}m ${String(t % 60).padStart(2, "0")}s`;
+  d.innerHTML = `<span class="n">${i + 1}</span><span class="g">${K[k][2]}</span>`;
+  const par_ = document.createElement("div"); par_.className = "par-line"; par_.style.top = `${Math.max(8, 96 - (par / t) * 70)}px`;
+  if (t > par) d.appendChild(par_);
+  tape.appendChild(d);
+});
+const sum = Object.values(lost).reduce((a, b) => a + b, 0);
+document.getElementById("causebar").innerHTML = Object.entries(lost).map(([k, v]) => `<div style="flex:${v};background:${K[k][1]}" title="${K[k][0]} ${v}"></div>`).join("");
+document.getElementById("legend").innerHTML = Object.entries(lost).map(([k, v]) => `<span style="--c:${K[k][1]}">${K[k][0]} −${v}</span>`).join("");
+</script>
+</body>
+</html>
