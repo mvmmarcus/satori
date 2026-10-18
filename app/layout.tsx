@@ -8,7 +8,7 @@ const publicSans = Public_Sans({ variable: "--font-public-sans", subsets: ["lati
 const sourceSerif = Source_Serif_4({ variable: "--font-source-serif", subsets: ["latin"], weight: ["400", "600"] });
 
 export const metadata: Metadata = {
-  title: "FilmRoom: Game review for the SAT",
+  title: "Satori: SAT prep that shows you why",
   description: "Take an SAT Math practice module, then watch the replay: why each mistake happened, how many points it cost, and how to fix it.",
 };
 

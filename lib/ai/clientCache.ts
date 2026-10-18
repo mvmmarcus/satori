@@ -1,4 +1,4 @@
-const KEY = "filmroom:ai:v1";
+const KEY = "satori:ai:v1";
 const MAX = 120;
 
 type Entry = { v: unknown; at: number };

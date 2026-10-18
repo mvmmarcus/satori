@@ -42,7 +42,7 @@ export type SessionActions = {
   reset(): void;
 };
 
-export const STORAGE_KEY = "filmroom:session:v1";
+export const STORAGE_KEY = "satori:session:v1";
 const VERSION = 1;
 
 const initialState = (): SessionState => ({

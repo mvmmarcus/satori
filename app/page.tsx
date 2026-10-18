@@ -5,7 +5,7 @@ import { Notice } from "@/components/landing/Notice";
 import { SampleReplay } from "@/components/landing/SampleReplay";
 
 const STEPS = [
-  { title: "Take a module", body: "22 SAT-style math questions in 35 minutes, with a built-in Desmos calculator. FilmRoom quietly records how you work: time on each question, answer changes, calculator use." },
+  { title: "Take a module", body: "22 SAT-style math questions in 35 minutes, with a built-in Desmos calculator. Satori quietly records how you work: time on each question, answer changes, calculator use." },
   { title: "Watch the replay", body: "Every question gets a verdict with the evidence behind it: a trap you fell for, a time sink, a second-guess, the wrong tool. An AI coach reads the whole tape and writes your scouting report." },
   { title: "Fix your mistakes", body: "Each miss becomes a twin question: same skill, same trap, new numbers. Get it right and the points it cost you count as recovered." },
 ];
@@ -17,7 +17,7 @@ export default function Home() {
         <Notice />
       </Suspense>
       <header className="mx-auto flex h-16 max-w-[1180px] items-center justify-between px-5">
-        <span className="font-serif text-[20px] font-semibold">FilmRoom</span>
+        <span className="font-serif text-[20px] font-semibold">Satori</span>
         <Link href="/module" className="text-sm font-semibold underline decoration-hair underline-offset-4 hover:decoration-ink">Start a module</Link>
       </header>
 
@@ -25,10 +25,10 @@ export default function Home() {
         <section className="mx-auto grid max-w-[1180px] items-center gap-12 px-5 pt-10 pb-20 lg:grid-cols-[1.05fr_1fr] lg:pt-16">
           <div>
             <h1 className="font-serif text-[44px] leading-[1.05] font-semibold text-balance sm:text-[64px]">
-              Don&rsquo;t just practice. Review the tape.
+              Don&rsquo;t just practice. Find out why.
             </h1>
             <p className="mt-6 max-w-[52ch] text-[18px] leading-relaxed text-ink-2">
-              Most SAT apps tell you <em>what</em> you got wrong. FilmRoom shows you <em>why</em>: the trap you took, the minute you lost, the answer you talked yourself out of. Then it tells you how many points each habit is costing you.
+              Most SAT apps tell you <em>what</em> you got wrong. Satori shows you <em>why</em>: the trap you took, the minute you lost, the answer you talked yourself out of. Then it tells you how many points each habit is costing you.
             </p>
             <div className="mt-9">
               <HeroActions />
@@ -60,7 +60,7 @@ export default function Home() {
               <p className="mt-3 font-serif text-[22px]">14 of 22 correct. Review: quadratics, percentages, systems.</p>
             </div>
             <div className="rounded-xl border border-ink bg-sheet p-6">
-              <p className="text-sm text-mute">FilmRoom</p>
+              <p className="text-sm text-mute">Satori</p>
               <p className="mt-3 font-serif text-[22px] leading-snug">
                 Three of your misses were traps you answered in under a minute. Two questions ate three minutes each. On question 8 you had the right answer and changed it.
               </p>

@@ -49,7 +49,7 @@ export function ReplayView() {
   return (
     <div className="min-h-dvh bg-paper">
       <header className="flex h-14 items-center justify-between border-b border-hair bg-sheet px-5">
-        <Link href="/" className="font-serif text-[18px] font-semibold">FilmRoom</Link>
+        <Link href="/" className="font-serif text-[18px] font-semibold">Satori</Link>
         <div className="flex items-center gap-5 text-sm text-mute">
           <span className="hidden sm:inline">Math · Module 1 · finished in {clock(endTime(events))}</span>
           <span data-testid="ai-mode" className="flex items-center gap-1.5 text-ink">

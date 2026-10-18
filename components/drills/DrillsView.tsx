@@ -35,7 +35,7 @@ export function DrillsView() {
   return (
     <div className="min-h-dvh bg-paper">
       <header className="flex h-14 items-center justify-between border-b border-hair bg-sheet px-5">
-        <Link href="/" className="font-serif text-[18px] font-semibold">FilmRoom</Link>
+        <Link href="/" className="font-serif text-[18px] font-semibold">Satori</Link>
         <Link href="/replay" className="text-sm font-semibold text-ink-2 hover:text-ink">Back to replay</Link>
       </header>
       <main className="mx-auto max-w-[820px] px-5 py-10">

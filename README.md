@@ -1,4 +1,4 @@
-# FilmRoom: game review for the SAT
+# Satori: SAT prep that shows you why
 
 Take an SAT Math practice module. Then watch the replay: **why** each mistake happened, how many points each habit cost you, and twin questions to fix them.
 
@@ -6,7 +6,7 @@ Take an SAT Math practice module. Then watch the replay: **why** each mistake ha
 
 The SAT prep market in 2026 is crowded with the same product: a question bank, an AI tutor chat, an adaptive plan and a score prediction (Acely, OnePrep, LearnQ and others). The official tools (Bluebook, Khan Academy) are free. What none of them do is tell a student *why* they missed a question: whether they misread it, took a trap, burned three minutes, changed a right answer, or graphed something faster solved by hand. Students do this by hand in spreadsheet error logs.
 
-FilmRoom borrows chess.com's Game Review: it records *how* you work through a module and turns that into a replay, a points-lost breakdown and targeted drills.
+The name: *satori* is the Zen word for a moment of sudden understanding, and it has "SAT" inside. Satori borrows chess.com's Game Review: it records *how* you work through a module and turns that into a replay, a points-lost breakdown and targeted drills.
 
 ## How it works
 

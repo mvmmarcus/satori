@@ -1,9 +1,9 @@
-# FilmRoom — product context
+# Satori — product context
 
 Source: approved design spec (docs/superpowers/specs/2026-10-18-filmroom-design.md) and the replay direction the user picked (design/replay-directions/README.md). Written from those, not a fresh interview.
 
 ## What it is
-"Game Review for the SAT." A student takes a 22-question SAT Math practice module; FilmRoom records how they worked (time, answer changes, Desmos use) and replays it: why each mistake happened, points lost per cause, an AI scouting report and per-question coach, then twin-question drills.
+"Game Review for the SAT." A student takes a 22-question SAT Math practice module; Satori records how they worked (time, answer changes, Desmos use) and replays it: why each mistake happened, points lost per cause, an AI scouting report and per-question coach, then twin-question drills.
 
 ## Who it's for
 - High-school students (16–18), often anxious, preparing for the digital SAT, many outside the US. Laptop is the primary device during a module (mirrors the real test); phone for reviewing.
