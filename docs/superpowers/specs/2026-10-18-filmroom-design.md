@@ -16,7 +16,8 @@ A portfolio-grade MVP that gets the attention of SAT/ACT test-prep companies dur
 - A visitor can go from the landing page through a 22-question module to a complete replay in one sitting, with no signup.
 - Each verdict shows the evidence behind it (time, answer changes, Desmos use, trap choice), so a reviewer can check it.
 - Twin questions always have a correct answer key (guaranteed by construction, not by the LLM).
-- The app works with no Claude API key, falling back to pre-written explanations.
+- With an API key, every replay has a Claude-written session debrief, a coach note per mistake, and a per-question "Ask" chat.
+- The app still works with no Claude API key, falling back to pre-written content.
 - It is deployed at a public URL and looks and feels production quality.
 
 ## 2. Scope
@@ -37,13 +38,15 @@ A portfolio-grade MVP that gets the attention of SAT/ACT test-prep companies dur
    - "Finish" ends the module, and so does the timer running out. A locked module cannot be resumed.
 3. **Replay (`/replay`).**
    - **Headline:** estimated scaled score and *"You lost ~N points"*, with a stacked bar of points lost by cause.
+   - **Scouting report:** the Claude session debrief (patterns linked to question tiles, plus 3 habits).
    - **Strip:** 22 tiles in order, each coloured and iconed by verdict (Brilliant, Correct, Smart skip, Trap, Time sink, Rushed, Second-guess, Wrong tool, Concept gap, Unanswered).
    - **Pacing chart:** time spent per question against its target time, plus the cumulative clock.
    - **Question detail** (select a tile):
      - The question with your answer, the correct answer, and the trap choice highlighted.
      - Your action timeline (seen → Desmos opened → chose B → changed to C → left), with durations.
      - The verdict with its evidence ("3m 40s vs 1m 10s target; changed C→B").
-     - Solution steps and a Claude coach note.
+     - Solution steps and a Claude coach note. For Concept gaps, an "AI read" badge with the likely misconception.
+     - An "Ask about this question" chat panel.
 4. **Drills (`/drills`).** One twin question per mistake, generated from the same template. After you answer, you see right or wrong plus the explanation. A "Points recovered" counter adds up the points-lost value of each mistake whose twin you answered correctly.
 
 ## 4. Mistake taxonomy
@@ -105,13 +108,22 @@ type Choice = { label: "A"|"B"|"C"|"D"; text: string; correct: boolean; misconce
 - **Points lost per question:** the scaled score at the actual raw score + 1, minus the scaled score at the actual raw score. This is the marginal value of one more correct answer.
 - **Points lost per cause:** the sum of points lost per question, grouped by verdict.
 
-## 7. AI (Claude)
+## 7. AI layer (Claude)
 
-- A server route, `POST /api/coach`, takes the question (stem, choices, solution), the student's answer, the verdict and its evidence. It returns a short coach note of at most 3 sentences: why this mistake happened and a concrete habit to fix it.
-- Model: the current Sonnet-class model, chosen during implementation after consulting the `claude-api` skill. Responses are short, have a timeout of about 8 seconds, and are cached per (question, verdict, answer) in memory on the server and in localStorage on the client.
-- Coach notes are fetched in parallel when the replay opens, and the UI renders right away with placeholders.
-- **Fallback:** with no `ANTHROPIC_API_KEY` or on any error, the app uses pre-written notes for each verdict and misconception from the content files. The UI never blocks on Claude.
-- Claude **never** produces answer keys or grades answers.
+The AI layer is a core part of the product: every replay is read and explained by Claude. The deterministic engine provides ground truth (answer keys, timings, rule verdicts). Claude provides interpretation, explanation and conversation. Four features:
+
+1. **Session debrief** (`POST /api/debrief`). Input: the full `ScoreReport`, all verdicts with their evidence, and per-skill results. Output: a "scouting report" shown at the top of the replay. It names the 1–2 dominant patterns across the module, each tied to specific question numbers, and gives 3 concrete habits for the next attempt. The structured JSON output is `{ headline, patterns: [{ title, questionIds[], explanation }], habits: string[3] }`, validated with zod. It streams in while the rest of the replay renders.
+2. **Coach note per mistake** (`POST /api/coach`). Input: the question (stem, choices, solution), the student's answer, the verdict, the evidence and the misconception tag. Output: at most 3 sentences covering why this happened and a concrete fix. These are fetched in parallel for every non-correct question when the replay opens.
+3. **Ask about this question** (`POST /api/ask`, streamed). A chat panel on each question in the replay. Its context is limited to that question, its solution, the student's action timeline and verdict. The system prompt keeps it on topic: SAT strategy and this question only. It may give a Desmos route as typed expressions. Each session has at most 10 turns per question.
+4. **AI second opinion on Concept gaps** (part of `/api/coach`). For Concept-gap verdicts, Claude also returns `{ misconception: string, confidence: "low"|"med"|"high" }`. The UI shows this as an "AI read" badge next to the rule verdict. It never replaces the rule verdict, and it is never shown for verdicts already explained by behaviour or a tagged trap.
+
+**Shared rules**
+- Model: the current Sonnet-class model, chosen during implementation after consulting the `claude-api` skill. The official Anthropic TypeScript SDK runs only in server route handlers, and the key never reaches the client.
+- **Prompt caching:** the system prompt and the shared module/question context are cached, so repeated coach and ask calls in one session are cheap and fast.
+- **Timeouts:** about 8 seconds for coach and debrief responses, 30 seconds for streamed ask responses. Responses are cached per input hash in memory on the server and in localStorage on the client.
+- **Guardrails:** Claude **never** produces answer keys or decides correctness. Prompts give it the verified answer and solution as facts. Every input passed to Claude is generated by the server from content plus the event log, never free text from the client, except the student's chat message in Ask.
+- **Fallback (resilience only):** with no `ANTHROPIC_API_KEY` or on any error, debrief and coach use pre-written content: a template-based debrief built from the top causes, and notes for each verdict and misconception. Ask shows "Coach is offline". The UI never blocks on Claude. A small "AI" or "offline" indicator in the replay header makes the current mode clear.
+- **Abuse limits:** the API routes have a simple per-IP rate limit (in memory, for example 60 requests per 10 minutes), and the maximum output size is capped.
 
 ## 8. Architecture
 
@@ -123,8 +135,11 @@ app/
   module/page.tsx          test UI
   replay/page.tsx          film room
   drills/page.tsx          fix-it drills
-  api/coach/route.ts       Claude coach note
+  api/coach/route.ts       coach note + AI read (concept gaps)
+  api/debrief/route.ts     session scouting report
+  api/ask/route.ts         streamed per-question chat
 lib/
+  ai/                      Anthropic client, prompts, zod schemas, context builders, cache, rate limit, fallbacks
   content/templates/*.ts   question templates
   content/module.ts        ordered module definition (template ids + canonical params)
   content/fallbacks.ts     pre-written coach notes
@@ -164,6 +179,8 @@ components/                Bluebook-like UI pieces, replay strip, timeline, char
   - Scoring table and points-lost maths.
   - Every template: canonical and 200 seeded random renders satisfy the constraint, have exactly one correct choice and distinct choice texts, and give an answer that matches an independent check function.
   - SPR equivalence.
+  - AI layer: context builders produce the expected payloads from fixture sessions, zod schemas reject malformed model output (which triggers the fallback), and the fallback debrief and notes render for every verdict. The Anthropic client is mocked, so unit tests make no live API calls.
+- **Manual AI check:** a script, `scripts/ai-smoke.ts`, runs debrief, coach and ask against 3 fixture sessions with a real key and prints the outputs for human review.
 - **Playwright:** one end-to-end test that takes the module (answers a few questions, changes one answer, opens Desmos, finishes early) and checks that the replay shows the expected verdicts and the drills page loads.
 - Per the user's preference, the dev server is not started by Claude. The user checks the app on `localhost:3001`.
 
