@@ -4,7 +4,6 @@ import { ASK_SYSTEM } from "@/lib/ai/prompts";
 import { readBody } from "@/lib/ai/route-utils";
 import { AskRequest } from "@/lib/ai/schemas";
 
-export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const body = await readBody(req, AskRequest);

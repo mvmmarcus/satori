@@ -6,7 +6,6 @@ import { COACH_SYSTEM } from "@/lib/ai/prompts";
 import { readBody } from "@/lib/ai/route-utils";
 import { CoachRequest, CoachSchema, type CoachResult } from "@/lib/ai/schemas";
 
-export const runtime = "nodejs";
 
 const cache = memoCache<CoachResult>(500);
 

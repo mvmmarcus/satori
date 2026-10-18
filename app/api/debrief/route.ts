@@ -6,7 +6,6 @@ import { DEBRIEF_SYSTEM } from "@/lib/ai/prompts";
 import { readBody } from "@/lib/ai/route-utils";
 import { DebriefRequest, DebriefSchema, type Debrief } from "@/lib/ai/schemas";
 
-export const runtime = "nodejs";
 
 const cache = memoCache<Debrief>(200);
 
