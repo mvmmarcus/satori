@@ -47,10 +47,16 @@ describe("diagnose", () => {
     expect(v.misconception).toBe(trap("q2").misconception);
   });
 
-  test("trap beats time-sink; second-guess beats trap", () => {
+  test("behaviour beats trap, keeping the misconception as evidence; second-guess beats both", () => {
     const a = log();
     a.visit("q2", 0, 200, [a.select(20, trap("q2").label)]);
-    expect(run(a.end(200)).q2.kind).toBe("trap");
+    const sink = run(a.end(200)).q2;
+    expect(sink.kind).toBe("time-sink");
+    expect(sink.misconception).toBe(trap("q2").misconception);
+    expect(sink.evidence.join(" ")).toMatch(/Also chose/);
+    const r = log();
+    r.visit("q2", 0, 10, [r.select(8, trap("q2").label)]);
+    expect(run(r.end(10)).q2.kind).toBe("rushed");
     const b = log();
     b.visit("q2", 0, 200, [b.select(20, right("q2")), b.select(190, trap("q2").label)]);
     expect(run(b.end(200)).q2.kind).toBe("second-guess");

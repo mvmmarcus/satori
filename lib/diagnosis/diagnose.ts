@@ -72,20 +72,24 @@ export function diagnose(
       return v("second-guess", [`Changed ${was} → ${final}`, `${was} was correct`]);
     }
 
+    // Behaviour rules outrank a trap; a tagged choice is kept as supporting evidence.
     const chosen = q.choices?.find((c) => c.label === final);
-    if (chosen?.misconception)
-      return v("trap", [`Chose ${final}: ${chosen.misconception.replace(/-/g, " ")}`], { misconception: chosen.misconception });
+    const tag = chosen?.misconception;
+    const trapNote = tag ? [`Also chose ${final}: ${tag.replace(/-/g, " ")}`] : [];
+    const tagged = tag ? { misconception: tag } : {};
 
-    if (t > cfg.timeSinkX * par) return v("time-sink", [vsPar(t, par)]);
-    if (t < cfg.rushedX * par) return v("rushed", [`Only ${vsPar(t, par)}`]);
+    if (t > cfg.timeSinkX * par) return v("time-sink", [vsPar(t, par), ...trapNote], tagged);
+    if (t < cfg.rushedX * par) return v("rushed", [`Only ${vsPar(t, par)}`, ...trapNote], tagged);
 
     if (t > cfg.wrongToolX * par) {
       const share = t ? dms / t : 0;
       if (!q.desmosFast && share > cfg.desmosShare)
-        return v("wrong-tool", [`Desmos ${Math.round(share * 100)}% of time on a by-hand question`, vsPar(t, par)]);
+        return v("wrong-tool", [`Desmos ${Math.round(share * 100)}% of time on a by-hand question`, vsPar(t, par), ...trapNote], tagged);
       if (q.desmosFast && dms === 0 && opts.desmosAvailable)
-        return v("wrong-tool", ["Desmos is the fast route here and was never opened", vsPar(t, par)]);
+        return v("wrong-tool", ["Desmos is the fast route here and was never opened", vsPar(t, par), ...trapNote], tagged);
     }
+
+    if (tag) return v("trap", [`Chose ${final}: ${tag.replace(/-/g, " ")}`], tagged);
 
     return v("concept-gap", [`Answered ${final}; correct is ${q.format === "mcq" ? q.choices!.find((c) => c.correct)!.label : q.answer}`]);
   });

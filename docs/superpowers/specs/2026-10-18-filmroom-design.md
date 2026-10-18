@@ -57,14 +57,16 @@ Verdicts are assigned by pure, deterministic rules in priority order; the first 
 |---|---|
 | **Unanswered** | No final answer |
 | **Second-guess** | The answer was correct at some point, then changed to an incorrect one |
-| **Trap** | The final answer is a choice tagged with a misconception |
 | **Time sink** | `t > 2 × par` |
 | **Rushed** | `t < 0.35 × par` |
 | **Wrong tool** | Desmos was used for more than 40% of `t` on a `desmosFast: false` question and `t > 1.3 × par`; or `desmosFast: true`, Desmos never opened, and `t > 1.3 × par` |
+| **Trap** | The final answer is a choice tagged with a misconception (and no behaviour rule above matched) |
 | **Concept gap** | Fallback for any other incorrect answer |
 | **Brilliant** *(correct)* | Difficulty is hard and `t ≤ 0.8 × par` |
 | **Correct** *(correct)* | Any other correct answer |
 | **Smart skip** *(no final answer)* | Overrides **Unanswered**: the question is hard, `t ≤ 0.5 × par`, and at least 3 questions that were unanswered when the student first left it ended up answered correctly |
+
+Behaviour rules (Time sink, Rushed, Wrong tool) outrank Trap, because they are the more useful coaching message. Whenever the final answer is a tagged choice, the verdict still carries `misconception` and an evidence line such as "Also chose B: sign error". *(Changed 2026-10-18 at the user's request: with Trap first, 15 of 22 questions could only ever be Trap or Second-guess.)*
 
 The thresholds live in one config object so they can be tuned. Each verdict carries an `evidence: string[]` used by the UI.
 
