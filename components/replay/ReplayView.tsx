@@ -56,9 +56,9 @@ export function ReplayView() {
         </div>
       </header>
 
-      <div className="lg:grid lg:grid-cols-[340px_1fr]">
-        <aside className="border-b border-hair bg-sheet lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto lg:border-r lg:border-b-0">
-          <div className="border-b border-hair px-5 pt-6 pb-5">
+      <div className="flex flex-col lg:grid lg:grid-cols-[340px_1fr]">
+        <aside className="order-2 border-t border-hair bg-sheet lg:order-none lg:sticky lg:top-0 lg:h-dvh lg:overflow-y-auto lg:border-t-0 lg:border-r">
+          <div className="hidden border-b border-hair px-5 pt-6 pb-5 lg:block">
             <p className="text-sm text-mute">Estimated SAT Math</p>
             <p className="mt-1 flex items-baseline gap-3">
               <span data-testid="score" className="font-serif text-[64px] leading-none font-semibold tabular">{report.scaled}</span>
@@ -73,6 +73,10 @@ export function ReplayView() {
         </aside>
 
         <main className="mx-auto w-full max-w-[1100px] px-5 py-8 sm:px-8">
+          <p className="mb-4 flex items-baseline gap-3 lg:hidden">
+            <span className="font-serif text-[44px] leading-none font-semibold tabular">{report.scaled}</span>
+            <span className="text-sm text-mute tabular">est. SAT Math · {report.raw} of {report.total} correct</span>
+          </p>
           <h1 className="max-w-[24ch] font-serif text-[34px] leading-[1.15] font-semibold text-balance sm:text-[40px]">
             {report.lostTotal > 0 ? (
               <>You left about <span data-testid="points-lost">{report.lostTotal} points</span> on the table. Here&rsquo;s where they went.</>

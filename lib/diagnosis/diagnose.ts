@@ -26,6 +26,7 @@ export type Verdict = {
 
 export function fmtDuration(ms: number): string {
   const s = Math.round(ms / 1000);
+  if (s < 60) return `${s}s`;
   return `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`;
 }
 

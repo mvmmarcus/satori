@@ -135,3 +135,12 @@ describe("diagnose", () => {
       if (!v.correct) expect(v.evidence.length, v.qid).toBeGreaterThan(0);
   });
 });
+
+describe("fmtDuration", () => {
+  test("seconds under a minute, m+ss above", async () => {
+    const { fmtDuration } = await import("@/lib/diagnosis/diagnose");
+    expect(fmtDuration(41_000)).toBe("41s");
+    expect(fmtDuration(0)).toBe("0s");
+    expect(fmtDuration(126_000)).toBe("2m 06s");
+  });
+});

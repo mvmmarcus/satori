@@ -4,7 +4,10 @@ import type { Debrief } from "@/lib/ai/schemas";
 
 type Props = { data: Debrief | null; loading: boolean; onFocus: (ids: string[]) => void; onPick: (qid: string) => void };
 
-const label = (ids: string[]) => ids.map((id) => `Q${id.slice(1)}`).join(", ");
+const label = (ids: string[]) => {
+  const shown = ids.slice(0, 6).map((id) => `Q${id.slice(1)}`).join(", ");
+  return ids.length > 6 ? `${shown} +${ids.length - 6} more` : shown;
+};
 
 export function ScoutingReport({ data, loading, onFocus, onPick }: Props) {
   return (
