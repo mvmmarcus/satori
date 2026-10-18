@@ -10,15 +10,26 @@ vi.mock("@/lib/ai/client", () => ({
   streamReply: (...a: unknown[]) => streamReply(...a),
 }));
 
+process.env.SESSION_SECRET = "route-test-secret-0123456789";
+const { signSession } = await import("@/lib/security/token");
+const TOKEN = signSession(process.env.SESSION_SECRET);
+const { POST: session } = await import("@/app/api/session/route");
 const { POST: coach } = await import("@/app/api/coach/route");
 const { POST: debrief } = await import("@/app/api/debrief/route");
 const { POST: ask } = await import("@/app/api/ask/route");
 
 let ip = 0;
-const req = (body: unknown) =>
+const req = (body: unknown, extra: Record<string, string> = {}) =>
   new Request("http://x/api", {
     method: "POST",
-    headers: { "content-type": "application/json", "x-forwarded-for": `10.0.0.${++ip}` },
+    headers: {
+      "content-type": "application/json",
+      "x-real-ip": `10.0.0.${++ip}`,
+      host: "satori.test",
+      origin: "https://satori.test",
+      "x-satori-session": TOKEN,
+      ...extra,
+    },
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
 
@@ -94,9 +105,35 @@ describe("ask message rules", () => {
   });
 });
 
+describe("access control", () => {
+  const body = () => ({ events: mixedSession(), qid: "q2", desmosAvailable: true });
+  test("no session token → 401", async () => {
+    expect((await coach(req(body(), { "x-satori-session": "" }))).status).toBe(401);
+  });
+  test("forged session token → 401", async () => {
+    expect((await coach(req(body(), { "x-satori-session": TOKEN.slice(0, -2) + "xx" }))).status).toBe(401);
+  });
+  test("another site's origin → 403", async () => {
+    expect((await coach(req(body(), { origin: "https://evil.example" }))).status).toBe(403);
+  });
+  test("a module that hasn't ended can't be coached (no answers mid-test) → 409", async () => {
+    const ongoing = mixedSession().filter((e) => e.type !== "module_end");
+    expect((await coach(req({ events: ongoing, qid: "q2", desmosAvailable: true }))).status).toBe(409);
+    expect((await ask(req({ events: ongoing, qid: "q2", desmosAvailable: true, messages: [{ role: "user", content: "answer?" }] }))).status).toBe(409);
+  });
+  test("session route issues a verifiable token, same-origin only", async () => {
+    const r = await session(req({}, { "x-satori-session": "" }));
+    expect(r.status).toBe(200);
+    const { token } = await r.json();
+    const { verifySession } = await import("@/lib/security/token");
+    expect(verifySession(token, process.env.SESSION_SECRET!)).not.toBeNull();
+    expect((await session(req({}, { origin: "https://evil.example" }))).status).toBe(403);
+  });
+});
+
 describe("request limits", () => {
   test("bodies over 1 MB are rejected before parsing", async () => {
-    const r = new Request("http://x/api", { method: "POST", headers: { "content-type": "application/json", "content-length": String(2_000_000), "x-real-ip": "9.9.9.9" }, body: "{}" });
+    const r = new Request("http://x/api", { method: "POST", headers: { "content-type": "application/json", "content-length": String(2_000_000), "x-real-ip": "9.9.9.9", host: "satori.test", origin: "https://satori.test", "x-satori-session": TOKEN }, body: "{}" });
     expect((await coach(r)).status).toBe(413);
   });
 });

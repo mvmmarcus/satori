@@ -7,7 +7,7 @@ import { coachContext, rebuild } from "@/lib/ai/context";
 import { fallbackCoach, fallbackDebrief } from "@/lib/ai/fallback";
 import { CoachSchema, DebriefSchema } from "@/lib/ai/schemas";
 import { memoCache, hashKey } from "@/lib/ai/cache";
-import { allow, clientIp } from "@/lib/ai/ratelimit";
+import { clientIp } from "@/lib/security/ip";
 import { KIND_COPY } from "@/lib/content/fallbacks";
 import { mixedSession } from "../helpers/sessions";
 
@@ -86,13 +86,6 @@ describe("cache and rate limit", () => {
     expect(clientIp(h({}))).toBe("local");
   });
 
-  test("allow: 60 per rolling 10 minutes", () => {
-    const t0 = 1_000_000;
-    for (let i = 0; i < 60; i++) expect(allow("1.2.3.4", t0 + i)).toBe(true);
-    expect(allow("1.2.3.4", t0 + 100)).toBe(false);
-    expect(allow("5.6.7.8", t0 + 100)).toBe(true);
-    expect(allow("1.2.3.4", t0 + 10 * 60_000 + 60)).toBe(true);
-  });
 });
 
 describe("client without a key", () => {

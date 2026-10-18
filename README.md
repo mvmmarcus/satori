@@ -102,7 +102,7 @@ flowchart LR
 
 - **Correct by construction.** Questions are templates. The answer key *and every wrong choice* are computed from the parameters; the "sign error" distractor is literally the answer worked out with the sign flipped. Twins can't ship a wrong key. A test renders every template with 200 random parameter sets and checks it against an independently written solver.
 - **The AI never grades.** Correctness, timing and verdicts come from deterministic code. The model gets the verified answer and solution as facts and is only asked to *explain*, through zod-validated structured output.
-- **The server trusts nothing the client computes.** API routes receive only the raw event log, rebuild the verdicts themselves, and validate everything: event count, chat roles and turn limits, body size, rate limit by trusted IP.
+- **The server trusts nothing the client computes.** API routes receive only the raw event log, rebuild the verdicts themselves, and validate everything: event count, chat roles and turn limits, body size. Paid AI calls need a same-origin request, a signed session token, and pass shared (Redis) rate limits plus a daily spend cap.
 - **Works offline.** With no API key, or if the model fails or times out, every AI surface falls back to pre-written coaching for that exact verdict and misconception. The demo never breaks.
 - **Provider-agnostic.** One interface, two adapters: OpenAI (Responses API, `gpt-5.5`) and Anthropic (`claude-opus-5-5`, with prompt caching and refusal fallbacks). Set one key and it picks itself.
 - **Hardened by real use.** A smoke test against the live model found TeX commands getting mangled inside JSON (`\frac` → form feed + `rac`). They're now repaired before rendering, with a regression test.
@@ -128,7 +128,27 @@ No key? Everything still works, and the coach runs on its pre-written notes.
 | `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | Enables the AI coach (either one) |
 | `AI_PROVIDER` | Force `openai` or `anthropic` when both keys are set |
 | `OPENAI_MODEL` / `ANTHROPIC_MODEL` | Override the default models |
+| `SESSION_SECRET` | **Required in production.** Signs the session tokens the AI routes require (`openssl rand -hex 32`) |
+| `UPSTASH_REDIS_REST_URL` / `_TOKEN` | Shared rate limiting across serverless instances (set automatically by Vercel's Upstash integration) |
+| `AI_DAILY_LIMIT` | Hard cap on AI calls per day across all users (default 3000) |
+| `ALLOWED_ORIGINS` | Extra origins allowed to call the API, comma-separated |
 | `NEXT_PUBLIC_DESMOS_KEY` | Desmos API key. The bundled one is Desmos's public demo key; get a free production key before going live |
+
+## Deploy to Vercel
+
+1. Import the repo in Vercel.
+2. Add **Upstash Redis** from the Vercel Marketplace (Storage tab) and connect it to the project.
+3. Set `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`), `SESSION_SECRET` and `NEXT_PUBLIC_DESMOS_KEY`.
+4. Set a monthly **spend limit** on your AI provider's dashboard.
+5. Deploy. The build warns if `SESSION_SECRET` or the Desmos key is missing.
+
+### Security model
+
+- **AI routes are gated:** same-origin requests only, a signed 6-hour session token, and rate limits per IP (60 per 10 min), per session (40 per hour) and globally per day.
+- **No answers mid-test:** the coach only responds to a finished module.
+- **Server-side truth:** routes rebuild verdicts from the raw event log; nothing the client computes is trusted. Inputs are zod-validated and capped at 1 MB.
+- **Headers:** a Content-Security-Policy (scripts limited to this site and Desmos), `frame-ancestors 'none'`, HSTS, `nosniff`, a strict referrer policy and a locked-down permissions policy.
+- **Secrets** live only in server code; the Desmos key is the only public variable.
 
 ## Tests
 
@@ -154,7 +174,6 @@ npx tsx --env-file=.env.local scripts/ai-smoke.ts   # real model output on 3 sam
 
 - One 22-question Math module for now.
 - The scaled score is a heuristic estimate, not an official conversion.
-- Rate limiting is in-memory per server instance.
 
 ## Project layout
 

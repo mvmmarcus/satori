@@ -5,6 +5,7 @@ import type { Verdict } from "@/lib/diagnosis/diagnose";
 import { hashString } from "@/lib/engine/rng";
 import { useSession } from "@/lib/store/session";
 import { cacheGet, cacheSet } from "./clientCache";
+import { aiFetch } from "./session-client";
 import { ASK_MAX_TURNS, type ChatMessage, type CoachResult, type Debrief } from "./schemas";
 
 type Source = "ai" | "fallback";
@@ -18,7 +19,7 @@ function useStructured<T>(url: string, cacheKey: string | null, body: () => obje
   useEffect(() => {
     if (!cacheKey || hit) return;
     const ctrl = new AbortController();
-    fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(getBody()), signal: ctrl.signal })
+    aiFetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(getBody()), signal: ctrl.signal })
       .then((r) => (r.ok ? (r.json() as Promise<Cached<T>>) : Promise.reject(r.status)))
       .then((res) => {
         // Only AI results are cached; a fallback is retried next time the replay opens.
@@ -70,13 +71,13 @@ export function useAsk(qid: string) {
       const update = (reply: string) =>
         setThreads((t) => ({ ...t, [qid]: [...next, { role: "assistant", content: reply }] }));
       try {
-        const res = await fetch("/api/ask", {
+        const res = await aiFetch("/api/ask", {
           method: "POST",
           headers: { "content-type": "application/json" },
           // Only completed turns are sent; the empty placeholder stays client-side.
           body: JSON.stringify({ events, qid, desmosAvailable, messages: next }),
         });
-        if (res.status === 503) {
+        if (res.status === 503 || res.status === 429) {
           setOffline(true);
           setThreads((t) => ({ ...t, [qid]: history }));
           return;

@@ -3,14 +3,14 @@ import { structured } from "@/lib/ai/client";
 import { debriefContext, rebuild } from "@/lib/ai/context";
 import { fallbackDebrief } from "@/lib/ai/fallback";
 import { DEBRIEF_SYSTEM } from "@/lib/ai/prompts";
-import { readBody } from "@/lib/ai/route-utils";
+import { readAiRequest } from "@/lib/ai/route-utils";
 import { DebriefRequest, DebriefSchema, DebriefWire, type Debrief } from "@/lib/ai/schemas";
 
 
 const cache = memoCache<Debrief>(200);
 
 export async function POST(req: Request) {
-  const body = await readBody(req, DebriefRequest);
+  const body = await readAiRequest(req, DebriefRequest);
   if ("error" in body) return body.error;
   const { events, desmosAvailable } = body.data;
 

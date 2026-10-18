@@ -1,12 +1,12 @@
 import { streamReply } from "@/lib/ai/client";
 import { askContext, rebuild } from "@/lib/ai/context";
 import { ASK_SYSTEM } from "@/lib/ai/prompts";
-import { readBody } from "@/lib/ai/route-utils";
+import { readAiRequest } from "@/lib/ai/route-utils";
 import { AskRequest } from "@/lib/ai/schemas";
 
 
 export async function POST(req: Request) {
-  const body = await readBody(req, AskRequest);
+  const body = await readAiRequest(req, AskRequest);
   if ("error" in body) return body.error;
   const { events, qid, desmosAvailable, messages } = body.data;
 
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const q = questions.find((x) => x.qid === qid)!;
   const v = verdicts.find((x) => x.qid === qid)!;
 
-  const chunks = streamReply({ system: ASK_SYSTEM, facts: askContext(q, v, events), messages, maxTokens: 2000 });
+  const chunks = streamReply({ system: ASK_SYSTEM, facts: askContext(q, v, events), messages, maxTokens: 1500 });
   if (!chunks) return Response.json({ error: "offline" }, { status: 503 });
 
   const encoder = new TextEncoder();

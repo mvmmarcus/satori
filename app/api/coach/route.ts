@@ -3,14 +3,14 @@ import { structured } from "@/lib/ai/client";
 import { coachContext, rebuild } from "@/lib/ai/context";
 import { fallbackCoach } from "@/lib/ai/fallback";
 import { COACH_SYSTEM } from "@/lib/ai/prompts";
-import { readBody } from "@/lib/ai/route-utils";
+import { readAiRequest } from "@/lib/ai/route-utils";
 import { CoachRequest, CoachSchema, CoachWire, type CoachResult } from "@/lib/ai/schemas";
 
 
 const cache = memoCache<CoachResult>(500);
 
 export async function POST(req: Request) {
-  const body = await readBody(req, CoachRequest);
+  const body = await readAiRequest(req, CoachRequest);
   if ("error" in body) return body.error;
   const { events, qid, desmosAvailable } = body.data;
 
