@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import { repairStrings } from "./latex";
 import { resolveProvider, type ProviderName } from "./provider";
 import { anthropicProvider } from "./providers/anthropic";
 import { openaiProvider } from "./providers/openai";
@@ -28,7 +29,7 @@ export async function structured<T>(
   if (!c) return null;
   try {
     const raw = await c.provider.structured({ ...opts, timeoutMs: opts.timeoutMs ?? 8000, wire: opts.wire ?? schema });
-    const parsed = schema.safeParse(raw);
+    const parsed = schema.safeParse(repairStrings(raw));
     return parsed.success ? parsed.data : null;
   } catch (err) {
     const e = err as { status?: number; name?: string };
