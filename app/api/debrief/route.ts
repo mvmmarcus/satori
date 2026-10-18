@@ -4,7 +4,7 @@ import { debriefContext, rebuild } from "@/lib/ai/context";
 import { fallbackDebrief } from "@/lib/ai/fallback";
 import { DEBRIEF_SYSTEM } from "@/lib/ai/prompts";
 import { readBody } from "@/lib/ai/route-utils";
-import { DebriefRequest, DebriefSchema, type Debrief } from "@/lib/ai/schemas";
+import { DebriefRequest, DebriefSchema, DebriefWire, type Debrief } from "@/lib/ai/schemas";
 
 
 const cache = memoCache<Debrief>(200);
@@ -24,8 +24,9 @@ export async function POST(req: Request) {
     facts: debriefContext(questions, verdicts, report),
     ask: "Write the scouting report for this module.",
     effort: "medium",
-    maxTokens: 2048,
-    timeoutMs: 15_000,
+    maxTokens: 8000,
+    timeoutMs: 20_000,
+    wire: DebriefWire,
   });
   if (!ai) return Response.json({ source: "fallback", data: fallbackDebrief(questions, verdicts, report) });
 

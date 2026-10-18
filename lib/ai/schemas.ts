@@ -29,3 +29,15 @@ export const AskRequest = CoachRequest.extend({
     .max(20),
 });
 export type ChatMessage = z.infer<typeof AskRequest>["messages"][number];
+
+// Shapes sent to the model as the output format. Length limits are enforced afterwards by the
+// strict schemas above (some providers' strict JSON-schema modes reject maxLength/minItems).
+export const CoachWire = z.object({
+  note: z.string(),
+  aiRead: z.object({ misconception: z.string(), confidence: z.enum(["low", "med", "high"]) }).nullable(),
+});
+export const DebriefWire = z.object({
+  headline: z.string(),
+  patterns: z.array(z.object({ title: z.string(), questionIds: z.array(z.string()), explanation: z.string() })),
+  habits: z.array(z.string()),
+});

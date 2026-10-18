@@ -90,11 +90,13 @@ describe("cache and rate limit", () => {
 
 describe("client without a key", () => {
   test("structured and streamReply report offline", async () => {
-    const prev = process.env.ANTHROPIC_API_KEY;
+    const prev = { a: process.env.ANTHROPIC_API_KEY, o: process.env.OPENAI_API_KEY };
     delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.OPENAI_API_KEY;
     const { structured, streamReply } = await import("@/lib/ai/client");
     expect(await structured(CoachSchema, { system: "s", facts: "f", ask: "a", effort: "low", maxTokens: 10 })).toBeNull();
     expect(streamReply({ system: "s", facts: "f", messages: [{ role: "user", content: "hi" }], maxTokens: 10 })).toBeNull();
-    if (prev) process.env.ANTHROPIC_API_KEY = prev;
+    if (prev.a) process.env.ANTHROPIC_API_KEY = prev.a;
+    if (prev.o) process.env.OPENAI_API_KEY = prev.o;
   });
 });

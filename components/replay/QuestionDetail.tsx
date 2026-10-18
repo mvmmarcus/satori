@@ -100,7 +100,7 @@ export function QuestionDetail({ q, v, events, number }: { q: Question; v: Verdi
           )}
 
           <div className="mt-6 rounded-lg bg-wash px-4 py-3.5" aria-live="polite">
-            <p className="text-[13px] font-medium text-mute">{coach.source === "ai" ? "Coach note · by Claude" : "Coach note"}</p>
+            <p className="text-[13px] font-medium text-mute">{coach.source === "ai" ? "Coach note · AI" : "Coach note"}</p>
             {v.correct ? (
               <p className="mt-1 font-serif text-[17px] leading-relaxed">
                 {v.kind === "brilliant" ? "Fast and right on a hard question. Whatever you did here, do it again." : "Right answer in good time. Nothing to fix."}

@@ -4,7 +4,7 @@ import { coachContext, rebuild } from "@/lib/ai/context";
 import { fallbackCoach } from "@/lib/ai/fallback";
 import { COACH_SYSTEM } from "@/lib/ai/prompts";
 import { readBody } from "@/lib/ai/route-utils";
-import { CoachRequest, CoachSchema, type CoachResult } from "@/lib/ai/schemas";
+import { CoachRequest, CoachSchema, CoachWire, type CoachResult } from "@/lib/ai/schemas";
 
 
 const cache = memoCache<CoachResult>(500);
@@ -27,7 +27,8 @@ export async function POST(req: Request) {
     facts: coachContext(q, v),
     ask: "Write the coach note for this question.",
     effort: "low",
-    maxTokens: 1024,
+    maxTokens: 4000,
+    wire: CoachWire,
   });
   if (!ai) return Response.json({ source: "fallback", data: fallbackCoach(q, v) });
 

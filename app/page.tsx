@@ -6,7 +6,7 @@ import { SampleReplay } from "@/components/landing/SampleReplay";
 
 const STEPS = [
   { title: "Take a module", body: "22 SAT-style math questions in 35 minutes, with a built-in Desmos calculator. FilmRoom quietly records how you work: time on each question, answer changes, calculator use." },
-  { title: "Watch the replay", body: "Every question gets a verdict with the evidence behind it: a trap you fell for, a time sink, a second-guess, the wrong tool. Claude reads the whole tape and writes your scouting report." },
+  { title: "Watch the replay", body: "Every question gets a verdict with the evidence behind it: a trap you fell for, a time sink, a second-guess, the wrong tool. An AI coach reads the whole tape and writes your scouting report." },
   { title: "Fix your mistakes", body: "Each miss becomes a twin question: same skill, same trap, new numbers. Get it right and the points it cost you count as recovered." },
 ];
 
@@ -72,7 +72,6 @@ export default function Home() {
       <footer className="border-t border-hair">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-3 px-5 py-6 text-[13px] text-mute">
           <span>Original practice questions in SAT style. Not affiliated with or endorsed by College Board. Score estimates are approximate.</span>
-          <span>AI coaching by Claude</span>
         </div>
       </footer>
     </div>

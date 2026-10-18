@@ -5,7 +5,7 @@ import { log } from "../helpers/events";
 const structured = vi.fn();
 const streamReply = vi.fn();
 vi.mock("@/lib/ai/client", () => ({
-  MODEL: "claude-opus-5-5",
+  providerName: () => "anthropic",
   structured: (...a: unknown[]) => structured(...a),
   streamReply: (...a: unknown[]) => streamReply(...a),
 }));

@@ -17,20 +17,24 @@ Module UI ──► event log (enter/leave, select, clear, cross-out, mark, Desm
      diagnosis rules (pure TS) ──► verdict per question + evidence
                 │                       │
                 ▼                       ▼
-     score report (points lost by cause)   Claude: scouting report, coach notes,
+     score report (points lost by cause)   AI (Claude or OpenAI): scouting report, coach notes,
                                            "Ask about this question" chat
 ```
 
 - **Ground truth is deterministic.** Questions are templates whose answer key and every wrong choice are computed from parameters, so twin questions are correct by construction. Each wrong choice is tagged with the misconception it represents.
 - **Verdicts:** second-guess, time sink, rushed, wrong tool, trap, concept gap, unanswered, plus brilliant, correct and smart skip. Thresholds live in `lib/diagnosis/config.ts`.
-- **Claude never grades.** The server rebuilds verdicts from the event log and hands Claude the verified answer and solution as facts. It writes the scouting report and coach notes (structured output, zod-validated) and streams chat answers. Model: `claude-opus-5-5`, adaptive thinking, low/medium effort, prompt caching, server-side refusal fallbacks.
+- **The AI never grades.** The server rebuilds verdicts from the event log and hands the model the verified answer and solution as facts. It writes the scouting report and coach notes (structured output, zod-validated) and streams chat answers.
+- **Two providers, one interface** (`lib/ai/providers/`):
+  - **Anthropic:** `claude-opus-5-5`, adaptive thinking, low/medium effort, prompt caching, server-side refusal fallbacks.
+  - **OpenAI:** `gpt-5.5` by default (override with `OPENAI_MODEL`), Responses API with structured outputs and reasoning effort.
+  - Choose with `AI_PROVIDER`, or just set one key and it's picked automatically.
 - **Works offline:** with no API key, or on any error, the replay uses pre-written notes per verdict and misconception.
 
 ## Run it locally
 
 ```bash
 npm install
-cp .env.example .env.local      # add ANTHROPIC_API_KEY to enable the AI coach
+cp .env.example .env.local      # add OPENAI_API_KEY or ANTHROPIC_API_KEY to enable the AI coach
 npm run dev                     # http://localhost:3001
 ```
 
@@ -40,12 +44,12 @@ npm run dev                     # http://localhost:3001
 npm test             # unit tests: engine, 22 templates × 200 random twins, recorder, diagnosis, scoring, store, AI routes
 npm run typecheck
 npm run test:e2e     # needs the dev server running on :3001
-ANTHROPIC_API_KEY=… npx tsx scripts/ai-smoke.ts   # real AI output on 3 fixture sessions (spends credits)
+npx tsx --env-file=.env.local scripts/ai-smoke.ts   # real AI output on 3 fixture sessions (spends credits)
 ```
 
 ## Deploy (Vercel)
 
-Set `ANTHROPIC_API_KEY` and `NEXT_PUBLIC_DESMOS_KEY`. The bundled Desmos key is Desmos's public demo key, which is for development only. Request a free production key from Desmos before going public.
+Set `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` (optionally `AI_PROVIDER`), and `NEXT_PUBLIC_DESMOS_KEY`. The bundled Desmos key is Desmos's public demo key, which is for development only. Request a free production key from Desmos before going public.
 
 ## Limitations
 
