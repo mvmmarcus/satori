@@ -28,12 +28,12 @@ export function sampleReplay() {
     const ms = p.secs * 1000;
     events.push({ t, type: "question_enter", qid: q.qid });
     if (p.desmos) events.push({ t: t + 5000, type: "desmos_open", qid: q.qid }, { t: t + ms - 8000, type: "desmos_close", qid: q.qid });
-    if (p.changedFromRight) events.push({ t: t + ms / 3, type: "answer_select", qid: q.qid, payload: { answer: right } });
+    if (p.changedFromRight) events.push({ t: t + Math.round(ms / 3), type: "answer_select", qid: q.qid, payload: { answer: right } });
     events.push({ t: t + ms - 4000, type: "answer_select", qid: q.qid, payload: { answer: final } });
     t += ms;
     events.push({ t, type: "question_leave", qid: q.qid });
   });
   events.push({ t, type: "module_end", payload: { reason: "finish" } });
   const verdicts = diagnose(events, questions, { desmosAvailable: true });
-  return { questions, verdicts, report: scoreReport(verdicts) };
+  return { questions, verdicts, report: scoreReport(verdicts), events };
 }

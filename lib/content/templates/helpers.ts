@@ -20,7 +20,7 @@ export function texFrac(n: number, d: number): string {
   const s = frac(n, d);
   if (!s.includes("/")) return s;
   const [a, b] = s.split("/");
-  return a.startsWith("-") ? `-\\frac{${a.slice(1)}}{${b}}` : `\\frac{${a}}{${b}}`;
+  return a.startsWith("-") ? `-\\dfrac{${a.slice(1)}}{${b}}` : `\\dfrac{${a}}{${b}}`;
 }
 
 /** Polynomial text from [coef, variable] terms, e.g. [[1,"x^2"],[-4,"x"],[3,""]] → "x^2 - 4x + 3". */

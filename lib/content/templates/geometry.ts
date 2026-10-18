@@ -48,7 +48,7 @@ const rightTriTrig = defineTemplate({
   },
   check: ({ i, swap }) => {
     const [p, q, h] = TRIPLES[i];
-    return `$\\frac{${swap ? q : p}}{${h}}$`;
+    return `$\\dfrac{${swap ? q : p}}{${h}}$`;
   },
   fallbackNotes: {
     "used-cosine": "That's the adjacent side over the hypotenuse, which is cosine. Sine uses the opposite side.",
