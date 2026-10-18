@@ -4,8 +4,10 @@ import { useState } from "react";
 import { MathText } from "@/components/math/MathText";
 import { parseSpr } from "@/lib/engine/answers";
 
-export function SprInput({ value, onCommit }: { value: string | undefined; onCommit: (v: string | null) => void }) {
-  const [draft, setDraft] = useState(value ?? "");
+type Props = { value: string | undefined; draft: string | undefined; onDraft: (v: string) => void; onCommit: (v: string | null) => void };
+
+export function SprInput({ value, draft: saved, onDraft, onCommit }: Props) {
+  const [draft, setDraft] = useState(saved ?? value ?? "");
   const valid = draft.trim() === "" || parseSpr(draft) !== null;
   const commit = () => onCommit(draft.trim() ? draft.trim() : null);
   const preview = draft.includes("/") ? `$\\frac{${draft.split("/")[0]}}{${draft.split("/")[1] ?? ""}}$` : draft;
@@ -20,7 +22,11 @@ export function SprInput({ value, onCommit }: { value: string | undefined; onCom
         autoComplete="off"
         maxLength={6}
         value={draft}
-        onChange={(e) => setDraft(e.target.value.replace(/[^0-9./-]/g, ""))}
+        onChange={(e) => {
+          const v = e.target.value.replace(/[^0-9./-]/g, "");
+          setDraft(v);
+          onDraft(v); // kept in the session so a refresh or the clock running out doesn't lose it
+        }}
         onBlur={commit}
         onKeyDown={(e) => e.key === "Enter" && commit()}
         aria-invalid={!valid}

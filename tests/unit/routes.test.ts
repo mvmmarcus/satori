@@ -76,6 +76,31 @@ describe("debrief", () => {
   });
 });
 
+describe("ask message rules", () => {
+  const ask_ = (messages: unknown) => ask(req({ events, qid: "q2", desmosAvailable: true, messages }));
+  const u = (content = "why?") => ({ role: "user", content });
+  const a = (content = "because") => ({ role: "assistant", content });
+  test("roles must alternate, starting and ending with the student", async () => {
+    streamReply.mockReturnValue((async function* () { yield "ok"; })());
+    for (const bad of [[u(), u()], [a(), u()], [u(), a()]]) expect((await ask_(bad)).status).toBe(400);
+  });
+  test("server enforces the 10-question cap", async () => {
+    const msgs = Array.from({ length: 11 }, (_, i) => [u(`q${i}`), a()]).flat().slice(0, 21);
+    expect((await ask_(msgs)).status).toBe(400);
+  });
+  test("coach replies longer than a student message are accepted back", async () => {
+    streamReply.mockReturnValue((async function* () { yield "ok"; })());
+    expect((await ask_([u(), a("x".repeat(2500)), u()])).status).toBe(200);
+  });
+});
+
+describe("request limits", () => {
+  test("bodies over 1 MB are rejected before parsing", async () => {
+    const r = new Request("http://x/api", { method: "POST", headers: { "content-type": "application/json", "content-length": String(2_000_000), "x-real-ip": "9.9.9.9" }, body: "{}" });
+    expect((await coach(r)).status).toBe(413);
+  });
+});
+
 describe("ask", () => {
   test("offline → 503", async () => {
     streamReply.mockReturnValue(null);

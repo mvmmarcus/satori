@@ -93,12 +93,46 @@ describe("session store", () => {
     }
   });
 
-  test("drills record answers and reseed", async () => {
+  test("drills record answers; recovery is sticky across reseeds", async () => {
     const { useSession } = await freshStore();
     useSession.getState().answerDrill("q3", "B", true);
-    expect(useSession.getState().drills.q3).toMatchObject({ answer: "B", correct: true });
+    expect(useSession.getState().drills.q3).toMatchObject({ answer: "B", correct: true, recovered: true });
     const seed = useSession.getState().drills.q3.seed;
     useSession.getState().newDrillSeed("q3");
-    expect(useSession.getState().drills.q3).toMatchObject({ seed: seed + 1, answer: null, correct: null });
+    expect(useSession.getState().drills.q3).toMatchObject({ seed: seed + 1, answer: null, correct: null, recovered: true });
+    useSession.getState().answerDrill("q3", "A", false);
+    expect(useSession.getState().drills.q3.recovered).toBe(true);
+  });
+
+  test("Desmos failing to load closes an open panel", async () => {
+    const { useSession } = await freshStore();
+    useSession.getState().start(T0);
+    useSession.getState().setDesmos(true, T0 + 1000);
+    useSession.getState().setDesmosAvailable(false, T0 + 2000);
+    const st = useSession.getState();
+    expect(st.desmosOpen).toBe(false);
+    expect(st.events.at(-1)).toMatchObject({ type: "desmos_close", t: 2000 });
+  });
+
+  test("an uncommitted typed answer is saved when time runs out", async () => {
+    const { useSession } = await freshStore();
+    useSession.getState().start(T0);
+    useSession.getState().goTo(3, T0 + 1000);
+    useSession.getState().setDraft("q4", "24");
+    useSession.getState().checkDeadline(T0 + 36 * 60_000);
+    const st = useSession.getState();
+    expect(st.answers.q4).toBe("24");
+    const types = st.events.map((e) => e.type);
+    expect(types.indexOf("answer_select")).toBeLessThan(types.indexOf("module_end"));
+    expect(st.events.find((e) => e.type === "answer_select")).toMatchObject({ qid: "q4", payload: { answer: "24" }, t: 35 * 60_000 });
+  });
+
+  test("valid JSON with a broken shape resets instead of crashing", async () => {
+    const { STORAGE_KEY } = await freshStore();
+    storage.setItem(STORAGE_KEY, JSON.stringify({ state: { status: "finished", events: null }, version: 1 }));
+    const { useSession } = await freshStore();
+    await useSession.persist.rehydrate();
+    expect(useSession.getState().status).toBe("idle");
+    expect(useSession.getState().events).toEqual([]);
   });
 });

@@ -11,6 +11,6 @@ export function drillQuestion(templateId: string, qid: string, seed: number): Qu
 
 export function pointsRecovered(verdicts: Verdict[], report: ScoreReport, drills: SessionState["drills"]): number {
   return verdicts
-    .filter((v) => MISTAKE_KINDS.includes(v.kind) && drills[v.qid]?.correct === true)
+    .filter((v) => MISTAKE_KINDS.includes(v.kind) && drills[v.qid]?.recovered === true)
     .reduce((sum, v) => sum + (report.perQuestion[v.qid] ?? 0), 0);
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/icons/Icon";
+import { timeAnnouncement } from "@/lib/module/announce";
 import { useSession } from "@/lib/store/session";
 
 const fmt = (ms: number) => {
@@ -31,11 +32,12 @@ export function Timer() {
     <div className="flex items-center gap-2">
       <span
         data-testid="timer"
-        aria-live={low ? "polite" : "off"}
+        aria-hidden={hidden}
         className={`tabular min-w-[4.5ch] text-center text-[17px] font-semibold ${hidden ? "invisible" : ""} ${low ? "text-[var(--alert)]" : ""}`}
       >
         {fmt(left)}
       </span>
+      <span className="sr-only" aria-live="polite">{timeAnnouncement(left)}</span>
       <button
         type="button"
         onClick={() => setHidden((h) => !h)}

@@ -5,7 +5,7 @@ import type { Verdict } from "@/lib/diagnosis/diagnose";
 import { hashString } from "@/lib/engine/rng";
 import { useSession } from "@/lib/store/session";
 import { cacheGet, cacheSet } from "./clientCache";
-import type { ChatMessage, CoachResult, Debrief } from "./schemas";
+import { ASK_MAX_TURNS, type ChatMessage, type CoachResult, type Debrief } from "./schemas";
 
 type Source = "ai" | "fallback";
 type Cached<T> = { data: T; source: Source };
@@ -49,7 +49,7 @@ export function useDebrief(verdicts: Verdict[], enabled: boolean) {
   return useStructured<Debrief>("/api/debrief", key, () => ({ events, desmosAvailable }));
 }
 
-export const ASK_TURNS = 10;
+export const ASK_TURNS = ASK_MAX_TURNS;
 
 export function useAsk(qid: string) {
   const events = useSession((s) => s.events);

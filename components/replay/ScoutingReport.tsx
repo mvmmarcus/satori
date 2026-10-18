@@ -1,5 +1,6 @@
 "use client";
 
+import { MathText } from "@/components/math/MathText";
 import type { Debrief } from "@/lib/ai/schemas";
 
 type Props = { data: Debrief | null; loading: boolean; onFocus: (ids: string[]) => void; onPick: (qid: string) => void };
@@ -24,10 +25,10 @@ export function ScoutingReport({ data, loading, onFocus, onPick }: Props) {
         </div>
       ) : (
         <>
-          <p className="mt-3 font-serif text-[20px] leading-snug text-balance">{data.headline}</p>
+          <MathText text={data.headline} className="mt-3 font-serif text-[20px] leading-snug text-balance" />
           <div className="mt-5 space-y-4">
-            {data.patterns.map((p) => (
-              <div key={p.title} onMouseEnter={() => onFocus(p.questionIds)} onMouseLeave={() => onFocus([])}>
+            {data.patterns.map((p, i) => (
+              <div key={i} onMouseEnter={() => onFocus(p.questionIds)} onMouseLeave={() => onFocus([])}>
                 <h3 className="font-semibold">
                   {p.title}
                   {p.questionIds.length > 0 && (
@@ -42,15 +43,15 @@ export function ScoutingReport({ data, loading, onFocus, onPick }: Props) {
                     </button>
                   )}
                 </h3>
-                <p className="mt-0.5 text-ink-2">{p.explanation}</p>
+                <MathText text={p.explanation} className="mt-0.5 text-ink-2" />
               </div>
             ))}
           </div>
           <div className="mt-6 border-t border-hair pt-4">
             <h3 className="text-sm font-semibold">Three things to do next time</h3>
             <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-ink-2 marker:text-mute">
-              {data.habits.map((h) => (
-                <li key={h}>{h}</li>
+              {data.habits.map((h, i) => (
+                <li key={i}><MathText as="span" text={h} /></li>
               ))}
             </ol>
           </div>

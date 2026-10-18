@@ -111,7 +111,13 @@ export function ModuleShell() {
                 onEliminate={(l) => s.eliminate(q.qid, l)}
               />
             ) : (
-              <SprInput key={q.qid} value={s.answers[q.qid]} onCommit={(v) => (v === null ? s.clear(q.qid) : s.select(q.qid, v))} />
+              <SprInput
+                key={q.qid}
+                value={s.answers[q.qid]}
+                draft={s.drafts[q.qid]}
+                onDraft={(v) => s.setDraft(q.qid, v)}
+                onCommit={(v) => (v === null ? s.clear(q.qid) : s.select(q.qid, v))}
+              />
             )}
           </article>
         </main>

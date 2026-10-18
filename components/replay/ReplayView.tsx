@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/icons/Icon";
+import { fallbackDebrief } from "@/lib/ai/fallback";
 import { useDebrief } from "@/lib/ai/hooks";
 import { endTime } from "@/lib/recorder/metrics";
 import { useReplay } from "@/lib/replay/useReplay";
@@ -36,6 +37,9 @@ export function ReplayView() {
   if (!hydrated || !ready) return <div className="min-h-dvh" aria-busy="true" />;
 
   const i = verdicts.findIndex((v) => v.qid === selected);
+  // Never leave the report spinning: if the coach can't be reached, use the pre-written debrief.
+  const report_ = debrief.data ?? (debrief.loading ? null : fallbackDebrief(questions, verdicts, report));
+  const mode = debrief.source === "ai" ? "AI" : debrief.loading ? "Coach" : "Offline";
   const mistakes = verdicts.filter((v) => !v.correct && v.kind !== "smart-skip").length;
   const pick = (qid: string) => {
     setPicked(qid);
@@ -49,8 +53,8 @@ export function ReplayView() {
         <div className="flex items-center gap-5 text-sm text-mute">
           <span className="hidden sm:inline">Math · Module 1 · finished in {clock(endTime(events))}</span>
           <span data-testid="ai-mode" className="flex items-center gap-1.5 text-ink">
-            <span className={`h-2 w-2 rounded-full ${debrief.source === "fallback" ? "bg-[var(--v-unanswered)]" : "bg-[var(--v-brilliant)]"}`} />
-            {debrief.source === "fallback" ? "Offline" : "AI"}
+            <span className={`h-2 w-2 rounded-full ${mode === "AI" ? "bg-[var(--v-brilliant)]" : "bg-[var(--v-unanswered)]"}`} />
+            {mode}
             <span className="sr-only"> coach</span>
           </span>
         </div>
@@ -89,7 +93,7 @@ export function ReplayView() {
           </div>
 
           <div className="mt-10 grid gap-8 rounded-xl border border-hair bg-sheet p-6 lg:grid-cols-2">
-            <ScoutingReport data={debrief.data} loading={debrief.loading} onFocus={setHighlight} onPick={pick} />
+            <ScoutingReport data={report_} loading={debrief.loading} onFocus={setHighlight} onPick={pick} />
             <section aria-labelledby="pacing">
               <h2 id="pacing" className="font-serif text-[22px] font-semibold">Pacing</h2>
               <p className="mb-3 text-sm text-mute">Time on each question against its target. Select a bar to open it.</p>

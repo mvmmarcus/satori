@@ -18,10 +18,10 @@ test("drillQuestion is deterministic per seed and never the canonical question",
 test("pointsRecovered counts correct drills on mistake verdicts only", () => {
   const { verdicts, report } = rebuild(mixedSession(), true);
   const drills = {
-    q1: { seed: 1, answer: "A", correct: true },   // q1 was correct: does not count
-    q2: { seed: 1, answer: "B", correct: true },   // trap → counts
-    q3: { seed: 1, answer: "B", correct: false },  // wrong drill → no
-    q4: { seed: 1, answer: null, correct: null },
+    q1: { seed: 1, answer: "A", correct: true, recovered: true },    // q1 was correct: does not count
+    q2: { seed: 2, answer: null, correct: null, recovered: true },   // trap, recovered earlier then reseeded → counts
+    q3: { seed: 1, answer: "B", correct: false, recovered: false },  // wrong drill → no
+    q4: { seed: 1, answer: null, correct: null, recovered: false },
   };
   expect(pointsRecovered(verdicts, report, drills)).toBe(report.perQuestion.q2);
 });

@@ -1,8 +1,9 @@
+import { z } from "zod";
 import { create } from "zustand";
 import { persist, type PersistStorage, type StorageValue } from "zustand/middleware";
 import { MODULE, MODULE_SECONDS } from "@/lib/content/module";
 import { hashString } from "@/lib/engine/rng";
-import type { ModuleEvent } from "@/lib/recorder/events";
+import { EventsSchema, type ModuleEvent } from "@/lib/recorder/events";
 
 export type SessionStatus = "idle" | "active" | "finished";
 
@@ -19,7 +20,9 @@ export type SessionState = {
   eliminated: Record<string, string[]>;
   desmosOpen: boolean;
   desmosAvailable: boolean;
-  drills: Record<string, { seed: number; answer: string | null; correct: boolean | null }>;
+  /** Typed-but-uncommitted student-produced answers; flushed into the log when the module ends. */
+  drafts: Record<string, string>;
+  drills: Record<string, { seed: number; answer: string | null; correct: boolean | null; recovered: boolean }>;
 };
 
 export type SessionActions = {
@@ -30,7 +33,8 @@ export type SessionActions = {
   eliminate(qid: string, label: string, now?: number): void;
   toggleMark(qid: string, now?: number): void;
   setDesmos(open: boolean, now?: number): void;
-  setDesmosAvailable(ok: boolean): void;
+  setDesmosAvailable(ok: boolean, now?: number): void;
+  setDraft(qid: string, value: string): void;
   finish(reason: "finish" | "timeout", now?: number): void;
   checkDeadline(now?: number): void;
   answerDrill(qid: string, answer: string, correct: boolean): void;
@@ -53,7 +57,25 @@ const initialState = (): SessionState => ({
   eliminated: {},
   desmosOpen: false,
   desmosAvailable: true,
+  drafts: {},
   drills: {},
+});
+
+// Shape check for what comes back from localStorage; anything else resets to a fresh session.
+const PersistedSchema = z.object({
+  version: z.literal(1),
+  status: z.enum(["idle", "active", "finished"]),
+  startedAt: z.number().nullable(),
+  deadline: z.number().nullable(),
+  events: EventsSchema,
+  currentIndex: z.number().int().min(0).max(21),
+  answers: z.record(z.string(), z.string()),
+  marked: z.record(z.string(), z.boolean()),
+  eliminated: z.record(z.string(), z.array(z.string())),
+  desmosOpen: z.boolean(),
+  desmosAvailable: z.boolean(),
+  drafts: z.record(z.string(), z.string()),
+  drills: z.record(z.string(), z.object({ seed: z.number(), answer: z.string().nullable(), correct: z.boolean().nullable(), recovered: z.boolean() })),
 });
 
 // Wraps every read/write so private mode, quota errors or corrupt JSON never throw.
@@ -142,8 +164,14 @@ export const useSession = create<SessionState & SessionActions>()(
           set({ desmosOpen: open });
         },
 
-        setDesmosAvailable(ok) {
+        setDesmosAvailable(ok, now = Date.now()) {
+          if (!ok && get().desmosOpen) get().setDesmos(false, now);
           set({ desmosAvailable: ok });
+        },
+
+        setDraft(qid, value) {
+          if (!active()) return;
+          set((s) => ({ drafts: { ...s.drafts, [qid]: value } }));
         },
 
         finish(reason, now = Date.now()) {
@@ -152,6 +180,14 @@ export const useSession = create<SessionState & SessionActions>()(
           // A timeout is stamped at the deadline, even if noticed later (e.g. after a refresh).
           const t = reason === "timeout" && deadline && startedAt ? Math.min(now, deadline) - startedAt : at(now);
           const qid = qidAt(currentIndex);
+          // Save anything typed but not yet committed (e.g. time ran out before Enter).
+          const { drafts, answers } = get();
+          for (const [dqid, value] of Object.entries(drafts)) {
+            const v = value.trim();
+            if (v && v !== answers[dqid]) push({ t, type: "answer_select", qid: dqid, payload: { answer: v } });
+          }
+          const committed = Object.fromEntries(Object.entries(drafts).map(([k, v]) => [k, v.trim()]).filter(([, v]) => v));
+          set((s) => ({ answers: { ...s.answers, ...committed }, drafts: {} }));
           if (desmosOpen) push({ t, type: "desmos_close", qid });
           push({ t, type: "question_leave", qid }, { t, type: "module_end", payload: { reason } });
           set({ status: "finished", desmosOpen: false });
@@ -164,15 +200,17 @@ export const useSession = create<SessionState & SessionActions>()(
 
         answerDrill(qid, answer, correct) {
           set((s) => {
-            const seed = s.drills[qid]?.seed ?? hashString(qid) + 1;
-            return { drills: { ...s.drills, [qid]: { seed, answer, correct } } };
+            const prev = s.drills[qid];
+            const seed = prev?.seed ?? hashString(qid) + 1;
+            return { drills: { ...s.drills, [qid]: { seed, answer, correct, recovered: !!prev?.recovered || correct } } };
           });
         },
 
         newDrillSeed(qid) {
           set((s) => {
-            const seed = (s.drills[qid]?.seed ?? hashString(qid) + 1) + 1;
-            return { drills: { ...s.drills, [qid]: { seed, answer: null, correct: null } } };
+            const prev = s.drills[qid];
+            const seed = (prev?.seed ?? hashString(qid) + 1) + 1;
+            return { drills: { ...s.drills, [qid]: { seed, answer: null, correct: null, recovered: !!prev?.recovered } } };
           });
         },
 
@@ -188,10 +226,14 @@ export const useSession = create<SessionState & SessionActions>()(
       // Hydrated explicitly on the client (see SessionHydrator) to avoid SSR mismatches.
       skipHydration: true,
       partialize: (s) => {
-        const { version, status, startedAt, deadline, events, currentIndex, answers, marked, eliminated, desmosOpen, desmosAvailable, drills } = s;
-        return { version, status, startedAt, deadline, events, currentIndex, answers, marked, eliminated, desmosOpen, desmosAvailable, drills } as SessionState & SessionActions;
+        const { version, status, startedAt, deadline, events, currentIndex, answers, marked, eliminated, desmosOpen, desmosAvailable, drafts, drills } = s;
+        return { version, status, startedAt, deadline, events, currentIndex, answers, marked, eliminated, desmosOpen, desmosAvailable, drafts, drills } as SessionState & SessionActions;
       },
       migrate: () => initialState() as SessionState & SessionActions,
+      merge: (persisted, current) => {
+        const ok = PersistedSchema.safeParse(persisted);
+        return { ...current, ...(ok.success ? ok.data : initialState()) };
+      },
     },
   ),
 );

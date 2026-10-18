@@ -2,7 +2,9 @@
 
 import { Icon } from "@/components/icons/Icon";
 import { MathText } from "@/components/math/MathText";
+import { fallbackCoach } from "@/lib/ai/fallback";
 import { useCoach } from "@/lib/ai/hooks";
+import { CoachNoteText } from "./CoachNoteText";
 import type { Question } from "@/lib/content/types";
 import { fmtDuration, type Verdict } from "@/lib/diagnosis/diagnose";
 import type { ModuleEvent } from "@/lib/recorder/events";
@@ -30,6 +32,8 @@ export function VerdictPill({ v }: { v: Verdict }) {
 
 export function QuestionDetail({ q, v, events, number }: { q: Question; v: Verdict; events: ModuleEvent[]; number: number }) {
   const coach = useCoach(v);
+  // If the coach can't be reached (offline, rate-limited, network), fall back to the pre-written note.
+  const note = coach.data ?? (coach.loading || v.correct ? null : fallbackCoach(q, v));
   const timeline = buildTimeline(events, q.qid);
   const correctText = q.format === "mcq" ? q.choices!.find((c) => c.correct)!.label : q.answer;
 
@@ -111,15 +115,15 @@ export function QuestionDetail({ q, v, events, number }: { q: Question; v: Verdi
                 <div className="h-4 w-4/5 animate-pulse rounded bg-sheet" />
               </div>
             ) : (
-              <p data-testid="coach-note" className="mt-1 font-serif text-[17px] leading-relaxed">
-                {coach.data?.note ?? "The coach couldn't be reached. The solution steps below walk through it."}
-              </p>
+              <div data-testid="coach-note">
+                <CoachNoteText text={note?.note ?? ""} />
+              </div>
             )}
-            {coach.data?.aiRead && (
+            {note?.aiRead && (
               <p data-testid="ai-read" className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-md border border-hair bg-sheet px-2.5 py-1.5 text-sm">
                 <span className="font-semibold">AI read</span>
-                <span className="text-ink-2">likely misconception: {coach.data.aiRead.misconception}</span>
-                <span className="text-mute">({coach.data.aiRead.confidence === "med" ? "medium" : coach.data.aiRead.confidence} confidence)</span>
+                <span className="text-ink-2">likely misconception: {note.aiRead.misconception}</span>
+                <span className="text-mute">({note.aiRead.confidence === "med" ? "medium" : note.aiRead.confidence} confidence)</span>
               </p>
             )}
           </div>

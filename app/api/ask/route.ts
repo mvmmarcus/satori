@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const q = questions.find((x) => x.qid === qid)!;
   const v = verdicts.find((x) => x.qid === qid)!;
 
-  const chunks = streamReply({ system: ASK_SYSTEM, facts: askContext(q, v, events), messages, maxTokens: 4000 });
+  const chunks = streamReply({ system: ASK_SYSTEM, facts: askContext(q, v, events), messages, maxTokens: 2000 });
   if (!chunks) return Response.json({ error: "offline" }, { status: 503 });
 
   const encoder = new TextEncoder();

@@ -7,7 +7,7 @@ import { coachContext, rebuild } from "@/lib/ai/context";
 import { fallbackCoach, fallbackDebrief } from "@/lib/ai/fallback";
 import { CoachSchema, DebriefSchema } from "@/lib/ai/schemas";
 import { memoCache, hashKey } from "@/lib/ai/cache";
-import { allow } from "@/lib/ai/ratelimit";
+import { allow, clientIp } from "@/lib/ai/ratelimit";
 import { KIND_COPY } from "@/lib/content/fallbacks";
 import { mixedSession } from "../helpers/sessions";
 
@@ -77,6 +77,13 @@ describe("cache and rate limit", () => {
 
   test("hashKey is stable across key order", () => {
     expect(hashKey({ a: 1, b: [1, 2] })).toBe(hashKey({ b: [1, 2], a: 1 }));
+  });
+
+  test("clientIp trusts x-real-ip, else the last x-forwarded-for hop", () => {
+    const h = (o: Record<string, string>) => new Request("http://x", { headers: o });
+    expect(clientIp(h({ "x-real-ip": "1.1.1.1", "x-forwarded-for": "6.6.6.6, 2.2.2.2" }))).toBe("1.1.1.1");
+    expect(clientIp(h({ "x-forwarded-for": "6.6.6.6, 2.2.2.2" }))).toBe("2.2.2.2");
+    expect(clientIp(h({}))).toBe("local");
   });
 
   test("allow: 60 per rolling 10 minutes", () => {

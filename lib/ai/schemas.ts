@@ -22,11 +22,21 @@ const Qid = z.string().regex(/^q([1-9]|1\d|2[0-2])$/);
 
 export const CoachRequest = z.object({ events: EventsSchema, qid: Qid, desmosAvailable: z.boolean() });
 export const DebriefRequest = z.object({ events: EventsSchema, desmosAvailable: z.boolean() });
+export const ASK_MAX_TURNS = 10;
+
 export const AskRequest = CoachRequest.extend({
   messages: z
-    .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(1000) }))
+    .array(
+      z.discriminatedUnion("role", [
+        z.object({ role: z.literal("user"), content: z.string().min(1).max(1000) }),
+        z.object({ role: z.literal("assistant"), content: z.string().min(1).max(4000) }),
+      ]),
+    )
     .min(1)
-    .max(20),
+    .max(ASK_MAX_TURNS * 2 - 1)
+    // A real thread alternates and ends with the student's new question. This blocks forged
+    // assistant-only runs (many-shot prompting) and enforces the per-question turn cap server-side.
+    .refine((ms) => ms.every((m, i) => m.role === (i % 2 === 0 ? "user" : "assistant")) && ms.at(-1)?.role === "user", "invalid_turns"),
 });
 export type ChatMessage = z.infer<typeof AskRequest>["messages"][number];
 
