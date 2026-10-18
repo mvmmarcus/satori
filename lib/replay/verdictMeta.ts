@@ -15,5 +15,5 @@ export const VERDICT_META: Record<VerdictKind, { label: string; color: string; i
   "concept-gap": { label: KIND_COPY["concept-gap"].label, color: "var(--v-concept-gap)", icon: "question" },
 };
 
-/** Display order for causes (most behavioural first). */
-export const CAUSE_ORDER: VerdictKind[] = ["trap", "time-sink", "rushed", "second-guess", "wrong-tool", "concept-gap", "unanswered"];
+// Validated adjacency for the stacked cause bar; do not reorder without re-running the dataviz validator.
+export const CAUSE_ORDER: VerdictKind[] = ["trap", "wrong-tool", "time-sink", "concept-gap", "second-guess", "rushed", "unanswered"];

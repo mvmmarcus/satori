@@ -27,7 +27,7 @@ export function SprInput({ value, onCommit }: { value: string | undefined; onCom
         aria-describedby="spr-help"
         className="h-12 w-full rounded-lg border border-[#9aa6b2] bg-sheet px-4 text-[18px] tabular focus:border-ink"
       />
-      <p id="spr-help" className={`mt-2 text-sm ${valid ? "text-mute" : "text-[var(--v-trap)]"}`}>
+      <p id="spr-help" className={`mt-2 text-sm ${valid ? "text-mute" : "text-[var(--alert)]"}`}>
         {valid ? "Up to 6 characters. Fractions like 3/4 or decimals like .75 are fine." : "That isn't a number we can read. Try 3/4, .75 or -2."}
       </p>
       {draft && valid && (

@@ -92,7 +92,7 @@ export function ModuleShell() {
                 data-testid="mark-review"
                 onClick={() => s.toggleMark(q.qid)}
                 aria-pressed={marked}
-                className={`flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold hover:bg-wash ${marked ? "text-[var(--v-trap)]" : "text-ink-2"}`}
+                className={`flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-semibold hover:bg-wash ${marked ? "text-[var(--alert)]" : "text-ink-2"}`}
               >
                 <Icon name="flag" className={marked ? "fill-current" : ""} />
                 {marked ? "Marked for review" : "Mark for review"}

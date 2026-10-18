@@ -64,7 +64,7 @@ export function Navigator({ current, answered, marked, onGo, onReview }: Props) 
                     } ${i === current ? "ring-2 ring-focus ring-offset-2" : ""}`}
                   >
                     {i + 1}
-                    {marked[m.qid] && <Icon name="flag" size={12} className="absolute -top-1.5 -right-1.5 rounded-full bg-sheet p-[1px] text-[var(--v-trap)]" />}
+                    {marked[m.qid] && <Icon name="flag" size={12} className="absolute -top-1.5 -right-1.5 rounded-full bg-sheet p-[1px] text-[var(--alert)]" />}
                   </button>
                 </li>
               );

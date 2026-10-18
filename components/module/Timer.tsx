@@ -32,7 +32,7 @@ export function Timer() {
       <span
         data-testid="timer"
         aria-live={low ? "polite" : "off"}
-        className={`tabular min-w-[4.5ch] text-center text-[17px] font-semibold ${hidden ? "invisible" : ""} ${low ? "text-[var(--v-trap)]" : ""}`}
+        className={`tabular min-w-[4.5ch] text-center text-[17px] font-semibold ${hidden ? "invisible" : ""} ${low ? "text-[var(--alert)]" : ""}`}
       >
         {fmt(left)}
       </span>

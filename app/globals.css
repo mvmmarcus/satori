@@ -9,17 +9,21 @@
   --hair: #d5dbe2;
   --wash: #eef2f6;
   --focus: #1f6fc2;
+  --alert: #b5381d; /* text-safe red for warnings (5.6:1 on white) */
 
-  --v-correct: #2f7d5b;
-  --v-brilliant: #0b7f59;
-  --v-trap: #b5381d;
-  --v-time-sink: #8a5a04;
-  --v-second-guess: #7c4dcc;
-  --v-wrong-tool: #1f6fc2;
-  --v-concept-gap: #c2185b;
-  --v-rushed: #a14a00;
-  --v-unanswered: #6b7480;
-  --v-smart-skip: #2f6f7d;
+  /* Verdict mark colours (fills/strokes only; text stays in ink).
+     Cause order trap → wrong-tool → time-sink → concept-gap → second-guess → rushed
+     passes the dataviz validator (adjacent CVD ΔE ≥ 9.7, normal ΔE ≥ 19.6). */
+  --v-trap: #eb6834;
+  --v-wrong-tool: #2a78d6;
+  --v-time-sink: #eda100;
+  --v-concept-gap: #e87ba4;
+  --v-second-guess: #6250d6;
+  --v-rushed: #e34948;
+  --v-brilliant: #1baf7a;
+  --v-smart-skip: #008300;
+  --v-correct: #aab4bf;
+  --v-unanswered: #8a939d;
 }
 
 @theme inline {
