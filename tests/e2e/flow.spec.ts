@@ -7,7 +7,7 @@ const wrong = (i: number) => Q[i].choices!.find((c) => !c.correct)!.label;
 
 test.beforeAll(async ({ request }) => {
   const up = await request.get("/").then((r) => r.ok()).catch(() => false);
-  test.skip(!up, "Start the dev server first: npm run dev (http://localhost:3001)");
+  test.skip(!up, "Start the dev server first (npm run dev), or set BASE_URL to a deployment");
 });
 
 test("take a module, see the replay, open drills", async ({ page }) => {

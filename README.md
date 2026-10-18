@@ -7,6 +7,8 @@
 Take a practice module. Satori watches **how** you work, then replays it like a chess engine reviewing your game:<br>
 the trap you took, the minute you lost, the right answer you talked yourself out of, and what each one cost you in points.
 
+**[▶ Try it live: satori-tawny.vercel.app](https://satori-tawny.vercel.app)**
+
 <br>
 
 <img src="docs/screenshots/replay.png" alt="Satori replay: estimated score, points lost by cause, AI scouting report and pacing chart" width="100%">
@@ -156,7 +158,7 @@ No key? Everything still works, and the coach runs on its pre-written notes.
 npm test            # 153 unit tests: engine, templates × 200 random twins, recorder, diagnosis,
                     # scoring, persisted session, AI routes, fallbacks, rendering
 npm run typecheck
-npm run test:e2e    # browser flow, needs `npm run dev` running
+npm run test:e2e    # browser flow, needs `npm run dev` running (or BASE_URL=https://… for a deployment)
 npx tsx --env-file=.env.local scripts/ai-smoke.ts   # real model output on 3 sample sessions (uses API credits)
 ```
 
